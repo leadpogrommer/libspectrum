@@ -2,10 +2,10 @@ import sys
 import matplotlib.pyplot as plt
 import matplotlib
 sys.path.insert(0, './cmake-build-debug')
-import c_test
+import pyspectrum
 
 
-d = c_test.Device()
+d = pyspectrum.Device()
 d.init()
 
 matplotlib.use("Qt5agg")

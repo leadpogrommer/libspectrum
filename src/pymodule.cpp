@@ -2,7 +2,7 @@
 #include <pybind11/stl.h>
 #include "Device.h"
 
-PYBIND11_MODULE(c_test, m){
+PYBIND11_MODULE(pyspectrum, m){
     pybind11::class_<Device>(m, "Device")
             .def(pybind11::init())
             .def("init", &Device::init)

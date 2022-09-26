@@ -8,11 +8,13 @@ include ( ${LIBFTDI_USE_FILE} )
 
 add_subdirectory(thirdparty/pybind11)
 
-pybind11_add_module(c_test Device.cpp pymodule.cpp)
-add_executable(example Device.cpp main.cpp)
+pybind11_add_module(pyspectrum src/Device.cpp src/pymodule.cpp)
+add_executable(example src/Device.cpp src/main.cpp)
 
 
 #include_directories("${LIBFTDI_INCLUDE_DIRS}")
 #add_executable(c_test main.cpp)
-target_link_libraries(c_test PRIVATE ${LIBFTDI_LIBRARIES} "ftdipp1")
+target_link_libraries(pyspectrum PRIVATE ${LIBFTDI_LIBRARIES} "ftdipp1")
+target_compile_definitions(pyspectrum PRIVATE VERSION_INFO=${VERSION_INFO})
+
 target_link_libraries(example PRIVATE ${LIBFTDI_LIBRARIES} "ftdipp1")
