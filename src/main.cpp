@@ -4,12 +4,11 @@
 #include <exception>
 #include <vector>
 
-#include "Device.h"
+#include "UsbRawSpectrometer.h"
 
 int main() {
 
-    Device device;
-    device.init();
+    UsbRawSpectrometer device(0x0403, 0x6014);
 
     device.readFrame();
     auto frame = device.readFrame();

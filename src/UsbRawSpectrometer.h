@@ -1,7 +1,8 @@
 #pragma once
 
-#include <cinttypes>
+#include "RawSpectrometer.h"
 #include <ftdi.hpp>
+
 
 #define COMMAND_WRITE_CR 0x01
 #define COMMAND_WRITE_TIMER 0x02
@@ -31,32 +32,26 @@ struct __attribute__ ((packed)) DeviceDataHeader {
     uint16_t length;
 };
 
-// TODO: endianness check
-class DeviceCommunication {
+
+class UsbRawSpectrometer: public RawSpectrometer {
 public:
-    DeviceCommunication(int vendor, int product);
+    UsbRawSpectrometer(int vendor, int product);
 
-    DeviceReply sendCommand(uint8_t code, uint32_t data);
+    void setTimer(unsigned long millis) override;
 
-    void readData(uint8_t *buffer, size_t amount);
+    unsigned int getPixelCount() override;
 
+    std::vector<uint16_t> readFrame() override;
 
 private:
+    const int pixel_number = 0x1006;
     uint16_t sequenceNumber = 1;
     Ftdi::Context context;
 
     void readExactly(uint8_t *buff, int amount);
+    DeviceReply sendCommand(uint8_t code, uint32_t data);
+    void readData(uint8_t *buffer, size_t amount);
 };
 
 
-class Device{
-public:
-    const int pixel_number = 0x1006;
-    void init();
 
-    std::vector<uint16_t >readFrame();
-
-
-private:
-    DeviceCommunication comm = DeviceCommunication(0x0403, 0x6014);
-};

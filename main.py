@@ -1,12 +1,12 @@
 import sys
 import matplotlib.pyplot as plt
 import matplotlib
-sys.path.insert(0, './cmake-build-debug')
+# sys.path.insert(0, './cmake-build-debug')
 import pyspectrum
 
 
-d = pyspectrum.Device()
-d.init()
+d = pyspectrum.Device(0x0403, 0x6014)
+
 
 matplotlib.use("Qt5agg")
 figure, ax = plt.subplots()

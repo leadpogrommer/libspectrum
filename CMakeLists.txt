@@ -8,8 +8,8 @@ include ( ${LIBFTDI_USE_FILE} )
 
 add_subdirectory(thirdparty/pybind11)
 
-pybind11_add_module(pyspectrum src/Device.cpp src/pymodule.cpp)
-add_executable(example src/Device.cpp src/main.cpp)
+pybind11_add_module(pyspectrum src/Spectrometer.cpp src/UsbRawSpectrometer.cpp src/pymodule.cpp)
+add_executable(example src/Spectrometer.cpp src/UsbRawSpectrometer.cpp src/main.cpp)
 
 
 #include_directories("${LIBFTDI_INCLUDE_DIRS}")
