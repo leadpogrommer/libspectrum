@@ -294,3 +294,6 @@ cython_debug/
 #.idea/
 
 # End of https://www.toptal.com/developers/gitignore/api/clion,cmake,python
+
+*.whl
+py_src/.idea

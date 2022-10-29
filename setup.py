@@ -122,14 +122,16 @@ class CMakeBuild(build_ext):
 # logic and declaration, and simpler if you include description/version in a file.
 setup(
     name="pyspectrum",
-    version="0.0.1",
-    author="Dean Moldovan",
-    author_email="dean0x7d@gmail.com",
-    description="A test project using pybind11 and CMake",
+    version="0.0.2",
+    author="leadpogrommer",
     long_description="",
+    package_data={'pyspectrum.demo': ['*']},
     ext_modules=[CMakeExtension("cmake_example")],
+    package_dir={'pyspectrum': 'py_src'},
+    packages=['pyspectrum', 'pyspectrum.demo'],
     cmdclass={"build_ext": CMakeBuild},
     zip_safe=False,
     extras_require={"test": ["pytest>=6.0"]},
-    python_requires=">=3.6",
+    python_requires=">=3.10",
+    requires=['numpy', 'matplotlib'],
 )

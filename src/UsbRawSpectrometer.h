@@ -41,7 +41,7 @@ public:
 
     unsigned int getPixelCount() override;
 
-    std::vector<uint16_t> readFrame() override;
+    RawSpectrum readFrame(int n_times) override;
 
 private:
     const int pixel_number = 0x1006;

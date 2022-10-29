@@ -19,11 +19,23 @@ unsigned int UsbRawSpectrometer::getPixelCount() {
     return pixel_number;
 }
 
-std::vector<uint16_t> UsbRawSpectrometer::readFrame() {
-    sendCommand(COMMAND_READ_FRAME, 1);
+RawSpectrum UsbRawSpectrometer::readFrame(int n_times) {
+    RawSpectrum ret{
+        getPixelCount(),
+        static_cast<unsigned int>(n_times),
+        std::vector<int>(n_times*getPixelCount()),
+        std::vector<uint8_t>(n_times*getPixelCount()),
+        };
+//    std::cout << "Cpp: RawSpectrum created" << std::endl;
     std::vector<uint16_t> data(pixel_number);
-    readData(reinterpret_cast<uint8_t *>(data.data()), pixel_number * 2);
-    return data;
+    for(int i = 0; i < n_times; i++){
+        sendCommand(COMMAND_READ_FRAME, 1);
+        readData(reinterpret_cast<uint8_t *>(data.data()), pixel_number * 2);
+        std::transform(data.begin(), data.end(), ret.clipped.begin() + (getPixelCount()*i), [](uint16_t n){return n == UINT16_MAX;});
+        std::copy(data.begin(), data.end(), ret.samples.begin() + (getPixelCount()*i));
+    }
+
+    return ret;
 }
 
 DeviceReply UsbRawSpectrometer::sendCommand(uint8_t code, uint32_t data) {
