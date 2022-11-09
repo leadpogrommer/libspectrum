@@ -44,7 +44,6 @@ class MainWindow(QtWidgets.QMainWindow):
         #self.button.setAutoRepeat(True)
         container.setLayout(layout)
 
-
         self.setCentralWidget(container)
         self.show()
         self.setUpdatesEnabled(True);
