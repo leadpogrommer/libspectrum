@@ -297,3 +297,4 @@ cython_debug/
 
 *.whl
 py_src/.idea
+**/.idea

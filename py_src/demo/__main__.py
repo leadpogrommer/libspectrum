@@ -5,6 +5,7 @@ if __name__ == '__main__':
     import matplotlib
     from matplotlib.widgets import Button
     from os import path
+    from time import time
 
     d = Spectrometer(usb_spectrometer(0x0403, 0x6014))
 
@@ -33,11 +34,19 @@ if __name__ == '__main__':
     profile_path = path.join(path.dirname(path.realpath(__file__)), 'profile.json')
     b_profile.on_clicked(lambda e: d.load_calibration_data(profile_path))
 
+    n_times = 2
+
     while running:
-        data = d.read_spectrum(1)
-        print(data)
+        read_start = time()
+        data = d.read_spectrum(n_times)
+        read_time = time() - read_start
+
+
+        print(f'Read data took {read_time}, {read_time/n_times} per frame')
+
 
         # print(data)
+
         ax.clear()
         ax.plot(data.wavelength, np.mean(data.samples, axis=0))
         plt.pause(0.05)

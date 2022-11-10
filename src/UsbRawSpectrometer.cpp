@@ -23,23 +23,22 @@ RawSpectrum UsbRawSpectrometer::readFrame(int n_times) {
     RawSpectrum ret{
         getPixelCount(),
         static_cast<unsigned int>(n_times),
-        std::vector<int>(n_times*getPixelCount()),
-        std::vector<uint8_t>(n_times*getPixelCount()),
+        std::vector<int>(n_times*pixel_number),
+        std::vector<uint8_t>(n_times*pixel_number),
         };
-//    std::cout << "Cpp: RawSpectrum created" << std::endl;
-    std::vector<uint16_t> data(pixel_number);
-    for(int i = 0; i < n_times; i++){
-        sendCommand(COMMAND_READ_FRAME, 1);
-        readData(reinterpret_cast<uint8_t *>(data.data()), pixel_number * 2);
-        std::transform(data.begin(), data.end(), ret.clipped.begin() + (getPixelCount()*i), [](uint16_t n){return n == UINT16_MAX;});
-        std::copy(data.begin(), data.end(), ret.samples.begin() + (getPixelCount()*i));
-    }
+    std::vector<uint16_t> data(pixel_number * n_times);
+
+    sendCommand(COMMAND_READ_FRAME, n_times);
+    readData(reinterpret_cast<uint8_t *>(data.data()), pixel_number * n_times * 2);
+
+    std::transform(data.begin(), data.end(), ret.clipped.begin(), [](uint16_t n){return n == UINT16_MAX;});
+    std::copy(data.begin(), data.end(), ret.samples.begin());
 
     return ret;
 }
 
 DeviceReply UsbRawSpectrometer::sendCommand(uint8_t code, uint32_t data) {
-    DeviceCommand command  = {{'#', 'C', 'M', 'D'}, code, 4, sequenceNumber, data};
+    DeviceCommand command  = {{'#', 'C', 'M', 'D'}, code, 4, sequenceNumber++, data};
     context.write(reinterpret_cast<unsigned char *>(&command), sizeof(DeviceCommand));
     DeviceReply reply{};
     readExactly(reinterpret_cast<unsigned char *>(&reply), sizeof(DeviceReply));
