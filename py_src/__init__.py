@@ -40,19 +40,17 @@ class Spectrum(SpectrumInfo):
 class Spectrometer:
     device: internal.RawSpectrometer
 
-
-
     def __init__(self, device: internal.RawSpectrometer):
         self.device = device
         self.dark_signal = np.zeros((self.device.getPixelCount()))
         self.wavelengths = np.arange(device.getPixelCount())
         self.led_map = np.arange(device.getPixelCount())
 
-    def read_dark_signal(self, n_times: int):
+    def read_dark_signal(self, n_times: int) -> None:
         data = self.device.readFrame(n_times).samples
         self.dark_signal = np.mean(data, axis=0)
 
-    def load_calibration_data(self, path: str):
+    def load_calibration_data(self, path: str) -> None:
         # TODO: validate data
         with open(path, 'r') as file:
             data = json.load(file)
@@ -69,6 +67,9 @@ class Spectrometer:
         samples = (data.samples - self.dark_signal)[:,self.led_map]
         clipped = data.clipped[:,self.led_map]
         return Spectrum(clipped, samples, self.wavelengths)
+
+    def set_timer(self, millis: int) -> None:
+        self.device.setTimer(millis)
 
 
 def usb_spectrometer(vid: int, pid: int) -> internal.UsbRawSpectrometer:

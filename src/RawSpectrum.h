@@ -27,11 +27,6 @@ struct RawSpectrum {
                 clipped.data()
         );
     }
-
-
-//    ~RawSpectrum(){
-//        std::cout << "Cpp: RawSpectrum destroyed" << std::endl;
-//    }
 };
 
 

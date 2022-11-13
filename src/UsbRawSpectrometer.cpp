@@ -11,8 +11,21 @@ UsbRawSpectrometer::UsbRawSpectrometer(int vendor, int product) {
 }
 
 
+// 10 bits for significand
+// 2 bits for exponent
 void UsbRawSpectrometer::setTimer(unsigned long millis) {
- // TODO: not implemented
+    millis *= 10;
+    int exponent = 0;
+    while(millis >= (1 << 10)){
+        exponent++;
+        millis /= 10;
+    }
+    if(exponent >= 4){
+        throw std::overflow_error("Exposure is to big");
+    }
+    uint32_t command_data = millis | (exponent << 16);
+
+    sendCommand(COMMAND_WRITE_TIMER, command_data);
 }
 
 unsigned int UsbRawSpectrometer::getPixelCount() {
