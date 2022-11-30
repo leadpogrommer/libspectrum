@@ -1,8 +1,8 @@
 #pragma once
 
-#include "RawSpectrometer.h"
 #include <ftdi.hpp>
 
+#include "RawSpectrometer.h"
 
 #define COMMAND_WRITE_CR 0x01
 #define COMMAND_WRITE_TIMER 0x02
@@ -10,7 +10,6 @@
 #define COMMAND_READ_ERRORS 0x92
 #define COMMAND_READ_VERSION 0x91
 #define COMMAND_READ_FRAME 0x05
-
 
 #pragma pack(push, 1)
 
@@ -37,8 +36,7 @@ struct DeviceDataHeader {
 
 #pragma pack(pop)
 
-
-class UsbRawSpectrometer: public RawSpectrometer {
+class UsbRawSpectrometer : public RawSpectrometer {
 public:
     UsbRawSpectrometer(int vendor, int product);
 
@@ -53,10 +51,7 @@ private:
     uint16_t sequenceNumber = 1;
     Ftdi::Context context;
 
-    void readExactly(uint8_t *buff, int amount);
+    void readExactly(uint8_t* buff, int amount);
     DeviceReply sendCommand(uint8_t code, uint32_t data);
-    void readData(uint8_t *buffer, size_t amount);
+    void readData(uint8_t* buffer, size_t amount);
 };
-
-
-
