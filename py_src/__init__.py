@@ -40,33 +40,36 @@ class Spectrum(SpectrumInfo):
 class Spectrometer:
     device: internal.RawSpectrometer
 
-    def __init__(self, device: internal.RawSpectrometer):
+    def __init__(self, device: internal.RawSpectrometer, pixel_start=2050, pixel_end=2050+1800, pixel_reverse=True):
         self.device = device
-        self.dark_signal = np.zeros((self.device.getPixelCount()))
-        self.wavelengths = np.arange(device.getPixelCount())
-        self.led_map = np.arange(device.getPixelCount())
+        self.dark_signal = np.zeros((pixel_end - pixel_start))
+        self.wavelengths = np.arange((pixel_end - pixel_start))
+        self.pixel_start = pixel_start
+        self.pixel_end = pixel_end
+        self.pixel_reverse = -1 if pixel_reverse else 1
 
     def read_dark_signal(self, n_times: int) -> None:
-        data = self.device.readFrame(n_times).samples
+        data = self.read_raw_spectrum(n_times).samples
         self.dark_signal = np.mean(data, axis=0)
 
     def load_calibration_data(self, path: str) -> None:
         # TODO: validate data
         with open(path, 'r') as file:
             data = json.load(file)
-        self.wavelengths = np.array(data['wavelengths'], dtype=float)
-        self.led_map = np.array(data['leds'], dtype=int)
+        wavelengths = np.array(data['wavelengths'], dtype=float)
+        if len(wavelengths) != (self.pixel_end - self.pixel_start):
+            raise ValueError("Profiling data has incorrect number of pixels")
+        self.wavelengths = wavelengths
 
-    def read_raw_spectrum(self, n_times: int) -> Data:
-        # TODO: test destructor
+    def read_raw_spectrum(self, n_times: int):
         data = self.device.readFrame(n_times)  # type: internal.RawSpectrum
-        return Data(data.clipped, data.samples)
+        samples = data.samples[:, self.pixel_start:self.pixel_end][:, ::self.pixel_reverse]
+        clipped = data.clipped[:, self.pixel_start:self.pixel_end][:, ::self.pixel_reverse]
+        return Data(clipped, samples)
 
     def read_spectrum(self, n_times: int) -> Spectrum:
-        data = self.device.readFrame(n_times)  # type: internal.RawSpectrum
-        samples = (data.samples - self.dark_signal)[:,self.led_map]
-        clipped = data.clipped[:,self.led_map]
-        return Spectrum(clipped, samples, self.wavelengths)
+        data = self.read_raw_spectrum(n_times)
+        return Spectrum(data.clipped, data.samples - self.dark_signal, self.wavelengths)
 
     def set_timer(self, millis: int) -> None:
         self.device.setTimer(millis)
