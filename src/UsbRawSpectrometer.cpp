@@ -44,9 +44,10 @@ RawSpectrum UsbRawSpectrometer::readFrame(int n_times) {
     readData(reinterpret_cast<uint8_t*>(data.data()),
              pixel_number * n_times * 2);
 
-    std::transform(data.begin(), data.end(), ret.clipped.begin(),
+    std::transform(data.begin(), data.end(), ret.samples.begin(),
+                   [](uint16_t n) { return n ^ (1 << 15); });
+    std::transform(ret.samples.begin(), ret.samples.end(), ret.clipped.begin(),
                    [](uint16_t n) { return n == UINT16_MAX; });
-    std::copy(data.begin(), data.end(), ret.samples.begin());
 
     return ret;
 }
