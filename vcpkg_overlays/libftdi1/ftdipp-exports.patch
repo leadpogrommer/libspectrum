@@ -1,0 +1,39 @@
+diff --git a/ftdipp/ftdi.hpp b/ftdipp/ftdi.hpp
+index f569cce..652f575 100644
+--- a/ftdipp/ftdi.hpp
++++ b/ftdipp/ftdi.hpp
+@@ -38,13 +38,13 @@ namespace Ftdi
+ {
+ 
+ /* Forward declarations*/
+-class List;
+-class Eeprom;
++class __declspec(dllexport) List;
++class __declspec(dllexport) Eeprom;
+ 
+ /*! \brief FTDI device context.
+  * Represents single FTDI device context.
+  */
+-class Context
++class __declspec(dllexport) Context
+ {
+     /* Friends */
+     friend class Eeprom;
+@@ -150,7 +150,7 @@ private:
+ 
+ /*! \brief Device EEPROM.
+  */
+-class Eeprom
++class __declspec(dllexport) Eeprom
+ {
+ public:
+     Eeprom(Context* parent);
+@@ -173,7 +173,7 @@ private:
+ 
+ /*! \brief Device list.
+  */
+-class List
++class __declspec(dllexport) List
+ {
+ public:
+     List(struct ftdi_device_list* devlist = 0);

@@ -12,21 +12,15 @@ struct RawSpectrum {
     std::vector<int> samples;
     std::vector<uint8_t> clipped;
 
-    py::array_t<int> pyGetSamples(){
-        return py::array_t<int>(
-                {n_measures, n_samples},
-                {n_samples * sizeof(int), sizeof(int)},
-                samples.data()
-                );
+    py::array_t<int> pyGetSamples() {
+        return py::array_t<int>({n_measures, n_samples},
+                                {n_samples * sizeof(int), sizeof(int)},
+                                samples.data());
     }
 
-    py::array_t<uint8_t> pyGetClipped(){
+    py::array_t<uint8_t> pyGetClipped() {
         return py::array_t<uint8_t>(
-                {n_measures, n_samples},
-                {n_samples * sizeof(uint8_t), sizeof(uint8_t)},
-                clipped.data()
-        );
+            {n_measures, n_samples},
+            {n_samples * sizeof(uint8_t), sizeof(uint8_t)}, clipped.data());
     }
 };
-
-

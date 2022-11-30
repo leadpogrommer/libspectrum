@@ -2,3 +2,6 @@
 	path = thirdparty/pybind11
 	url = https://github.com/pybind/pybind11.git
 	branch = stable
+[submodule "vcpkg"]
+	path = vcpkg
+	url = https://github.com/microsoft/vcpkg.git

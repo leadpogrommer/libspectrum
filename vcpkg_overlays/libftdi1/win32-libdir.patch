@@ -1,0 +1,18 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 3b0b87c..8cd6e82 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -158,12 +158,7 @@ set(prefix      ${CMAKE_INSTALL_PREFIX})
+ set(exec_prefix ${CMAKE_INSTALL_PREFIX}/bin)
+ set(includedir  ${CMAKE_INSTALL_PREFIX}/include/${PROJECT_NAME})
+ 
+-if(${UNIX})
+-   set(libdir      ${CMAKE_INSTALL_PREFIX}/lib${LIB_SUFFIX})
+-endif(${UNIX})
+-if(${WIN32})
+-   set(libdir      ${CMAKE_INSTALL_PREFIX}/bin)
+-endif(${WIN32})
++set(libdir      ${CMAKE_INSTALL_PREFIX}/lib${LIB_SUFFIX})
+ 
+ configure_file(${CMAKE_SOURCE_DIR}/libftdi1.pc.in ${CMAKE_BINARY_DIR}/libftdi1.pc @ONLY)
+ configure_file(${CMAKE_SOURCE_DIR}/libftdipp1.pc.in ${CMAKE_BINARY_DIR}/libftdipp1.pc @ONLY)

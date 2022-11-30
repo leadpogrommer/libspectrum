@@ -298,3 +298,4 @@ cython_debug/
 *.whl
 py_src/.idea
 **/.idea
+dark_signal.dat

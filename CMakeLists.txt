@@ -1,10 +1,13 @@
 cmake_minimum_required(VERSION 3.22)
+
 project(c_test)
 
 set(CMAKE_CXX_STANDARD 20)
 set(PYMODULE_NAME _pyspectrum)
 
+find_package(Boost REQUIRED)
 find_package(LibFTDI1 REQUIRED)
+include_directories ( ${Boost_INCLUDE_DIRS} )
 include ( ${LIBFTDI_USE_FILE} )
 
 add_subdirectory(thirdparty/pybind11)

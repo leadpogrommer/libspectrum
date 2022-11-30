@@ -1,0 +1,6 @@
+{
+    "name": "libspectrum",
+    "dependencies": [
+        "libftdi1"
+    ]
+}

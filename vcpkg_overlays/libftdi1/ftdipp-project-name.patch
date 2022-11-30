@@ -1,0 +1,13 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 5aecafc..3b0b87c 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -136,7 +136,7 @@ endif ()
+ 
+ add_subdirectory(src)
+ if ( FTDIPP )
+-  project(libftdipp1 C CXX)
++  project(libftdi1 C CXX)
+   add_subdirectory(ftdipp)
+ endif ()
+ if ( PYTHON_BINDINGS )
