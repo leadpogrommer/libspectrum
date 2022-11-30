@@ -1,6 +1,7 @@
-#include <cinttypes>
-#include <vector>
+#pragma once
 
+#include <vector>
+#include <cinttypes>
 #include "RawSpectrum.h"
 
 class RawSpectrometer {
