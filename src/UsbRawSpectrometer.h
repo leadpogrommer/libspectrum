@@ -1,7 +1,7 @@
 #pragma once
 
-#include "RawSpectrometer.h"
 #include <ftdi.hpp>
+#include "RawSpectrometer.h"
 
 
 #define COMMAND_WRITE_CR 0x01

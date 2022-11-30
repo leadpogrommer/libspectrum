@@ -1,7 +1,9 @@
 #include "UsbRawSpectrometer.h"
 
 UsbRawSpectrometer::UsbRawSpectrometer(int vendor, int product) {
-    context.open(vendor, product);
+    if(context.open(vendor, product) < 0){
+        throw std::runtime_error("Device not found");
+    }
     context.set_bitmode(BITMODE_SYNCFF, BITMODE_SYNCFF);
     context.set_usb_read_timeout(300);
     context.set_usb_write_timeout(300);
@@ -52,9 +54,14 @@ RawSpectrum UsbRawSpectrometer::readFrame(int n_times) {
 
 DeviceReply UsbRawSpectrometer::sendCommand(uint8_t code, uint32_t data) {
     DeviceCommand command  = {{'#', 'C', 'M', 'D'}, code, 4, sequenceNumber++, data};
-    context.write(reinterpret_cast<unsigned char *>(&command), sizeof(DeviceCommand));
+    if(context.write(reinterpret_cast<unsigned char *>(&command), sizeof(DeviceCommand)) < 0){
+        throw std::runtime_error("Device write error");
+    }
     DeviceReply reply{};
     readExactly(reinterpret_cast<unsigned char *>(&reply), sizeof(DeviceReply));
+    if(memcmp(reply.magic, "#ANS", 4) != 0){
+        throw std::runtime_error("Received bad #ANS magic from device");
+    }
     return reply;
 }
 
@@ -63,6 +70,9 @@ void UsbRawSpectrometer::readData(uint8_t *buffer, size_t amount) {
     while (dataRead < amount){
         DeviceDataHeader header{};
         readExactly(reinterpret_cast<unsigned char *>(&header), sizeof(header));
+        if(memcmp(header.magic, "#DAT", 4) != 0){
+            throw std::runtime_error("Received bad #DAT magic from device");
+        }
         if(header.length > (amount - dataRead)){
             throw std::overflow_error("Trying to read more data than expected");
         }
@@ -74,7 +84,10 @@ void UsbRawSpectrometer::readData(uint8_t *buffer, size_t amount) {
 void UsbRawSpectrometer::readExactly(uint8_t *buff, int amount) {
     int wasRead = 0;
     while (wasRead != amount){
-        wasRead += context.read(buff + wasRead, amount - wasRead);
-
+        int res = context.read(buff + wasRead, amount - wasRead);
+        if(res < 0){
+            throw std::runtime_error("Device read error");
+        }
+        wasRead += res;
     }
 }
