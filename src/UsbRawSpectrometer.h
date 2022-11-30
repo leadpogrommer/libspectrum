@@ -11,7 +11,10 @@
 #define COMMAND_READ_VERSION 0x91
 #define COMMAND_READ_FRAME 0x05
 
-struct __attribute__ ((packed)) DeviceCommand {
+
+#pragma pack(push, 1)
+
+struct DeviceCommand {
     char magic[4];
     uint8_t code;
     uint8_t length;
@@ -19,7 +22,7 @@ struct __attribute__ ((packed)) DeviceCommand {
     uint32_t data;
 };
 
-struct __attribute__ ((packed)) DeviceReply {
+struct DeviceReply {
     char magic[4];
     char code;
     uint8_t length;
@@ -27,10 +30,12 @@ struct __attribute__ ((packed)) DeviceReply {
     uint16_t data;
 };
 
-struct __attribute__ ((packed)) DeviceDataHeader {
+struct DeviceDataHeader {
     char magic[4];
     uint16_t length;
 };
+
+#pragma pack(pop)
 
 
 class UsbRawSpectrometer: public RawSpectrometer {
