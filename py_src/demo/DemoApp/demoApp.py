@@ -65,8 +65,3 @@ class MainWindow(QtWidgets.QMainWindow):
     def spectrum_draw(self):
         self.clear()
         self.show_spectre()
-
-
-app = QtWidgets.QApplication([])
-w = MainWindow()
-app.exec_()
