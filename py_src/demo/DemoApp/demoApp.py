@@ -1,67 +1,83 @@
-from PyQt5.QtCore import QEvent, QThread
+import os
+import pyspectrum
+from PyQt5.QtCore import QEvent
+import dataLayout
 from pyspectrum_mock import Spectrometer
-import numpy as np
-import time
-from threading import Thread
-from PyQt5.QtWidgets import QVBoxLayout, QWidget
-import pyqtgraph as pg
+from PyQt5.QtWidgets import QWidget, QGridLayout
 from PyQt5 import QtCore, QtWidgets
-
-
-class ButtonClicker(Thread):
-    def __init__(self, button):
-        self.running = True
-        self.sleepTime = 0.1
-        self.button = button
-        super().__init__()
-
-    def end(self): self.running = False
-    def run(self) -> None:
-        while self.running:
-            self.button.click()
-            time.sleep(self.sleepTime)
+from graphLayout import GraphLayout
+from spectrometerController import SpectrometerController
 
 
 class MainWindow(QtWidgets.QMainWindow):
+    def update_func(self, spectrum: pyspectrum.Spectrum):
+        self.spectrumLayout.update_function(spectrum)
+        self.spectrum = spectrum
     def __init__(self, *args, **kwargs):
         super(MainWindow, self).__init__(*args, **kwargs)
-        self.spectrometre = Spectrometer()
+        # self.Spectrometer = Spectrometer(pyspectrum.usb_spectrometer(0x403, 0x6014))
+        # self.Spectrometer.read_dark_signal(10)
+        self.spectrumLayout=GraphLayout(self)
+        self.file_save_layout = dataLayout.DataLayout(self)
+        self.setWindowTitle("Pyspectrum")
+        layout = QGridLayout()
+        layout.addLayout(self.spectrumLayout,0,0)
+        layout.addLayout(self.file_save_layout,0,1)
 
-        self.graph = pg.PlotWidget()
-        self.graph.getPlotItem().setMouseEnabled(False, False)
+        self.spectrum = None
+        self.spectrometer_controller=None
 
-        self.button = QtWidgets.QPushButton()
-        self.button.clicked.connect(self.spectrum_draw)
-
-        self.t = ButtonClicker(self.button)
-
-        self.label = QtWidgets.QLabel()
-
-        layout = QVBoxLayout()
-        layout.addWidget(self.graph)
-        layout.addWidget(self.label)
         container = QWidget()
         container.setLayout(layout)
         self.setCentralWidget(container)
-
         self.show()
-        self.t.start()
+
+        spectrometer=self.starting_inputs()
+        if spectrometer != None:
+            self.spectrometer_controller = SpectrometerController(spectrometer)
+            self.spectrometer_controller.set_func(self.update_func)
+            self.spectrometer_controller.start()
 
     def event(self, event: QtCore.QEvent) -> bool:
         if event.type() == QEvent.Close:
-            self.t.end()
+            if self.spectrometer_controller == None:
+                return True
+            self.spectrometer_controller.end()
+            return True
+        if event.type() == QEvent.MouseButtonDblClick:
+            if self.spectrometer_controller == None:
+                return True
+            self.file_save_layout.calculateData(self.spectrometer_controller._spectrum)
+            self.spectrometer_controller.pause()
             return True
         return QWidget.event(self, event)
 
-    def show_spectre(self):
-        data = self.spectrometre.read_spectrum(1)
-        self.graph.plot().setData(data.wavelength, np.mean(data.samples, axis=0))
-        self.maxWave = data.wavelength[np.argmax(np.mean(data.samples, axis=0))]
-        self.label.setText("Max-I Wave: " + str(self.maxWave))
-
-    def clear(self):
-        self.graph.getPlotItem().clear()
-
-    def spectrum_draw(self):
-        self.clear()
-        self.show_spectre()
+    def starting_inputs(self) -> Spectrometer:
+        dialog = QtWidgets.QInputDialog()
+        lastPicked=0
+        while True:
+            text, ok = dialog.getItem(self, "Spectrum source option","Choose import option", ["Spectrometer", "File"], lastPicked, False)
+            if not ok:
+                break
+            if text == "File":
+                lastPicked=1
+                filename, ok=dialog.getText(self, "Import file", "FilePath: ")
+                while filename == "" and ok:
+                    filename, ok = dialog.getText(self, "Import file", "Filename must not be empty")
+                if not os.path.isfile(filename) and ok:
+                    mb=QtWidgets.QMessageBox()
+                    mb.setWindowTitle("Error")
+                    mb.setText("File not found")
+                    mb.exec_()
+                    continue
+                if ok:
+                    return Spectrometer(filename)
+            if text == "Spectrometer" and ok:
+                lastPicked = 0
+                try:
+                    return pyspectrum.Spectrometer(pyspectrum.usb_spectrometer(0x403, 0x6014), pixel_start=2050, pixel_end=2050+1800, pixel_reverse=True)
+                except RuntimeError:
+                    mb = QtWidgets.QMessageBox()
+                    mb.setWindowTitle("Error")
+                    mb.setText("Spectrometer not found")
+                    mb.exec_()
