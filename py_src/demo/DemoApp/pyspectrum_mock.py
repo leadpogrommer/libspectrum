@@ -1,4 +1,5 @@
 import dataclasses
+import string
 import time
 from typing import Any
 import numpy as np
@@ -40,16 +41,17 @@ class CustomUnpickler(pickle.Unpickler):
             return Spectrum
         return super().find_class(__module_name, __global_name)
 
-_data = CustomUnpickler(open(path.join(path.dirname(path.realpath(__file__)), 'data.pickle'), 'rb')).load()
+
 
 
 def __not_implemented(self):
         raise NotImplementedError('Not implemented in mock')
 
 class Spectrometer:
-    def __init__(self) -> None:
+    _data = None
+    def __init__(self,filename: string) -> None:
         self.__creation_time = time.time()
-
+        self._data = CustomUnpickler(open(path.join(path.dirname(path.realpath(__file__)), filename), 'rb')).load()
     def read_dark_signal(self, n_times: int):
         pass
 
@@ -63,8 +65,8 @@ class Spectrometer:
         if n_times != 1:
             __not_implemented('Only n_times=1 supported in mock')
         t = time.time()
-        d = int(((t - self.__creation_time)/2)*10) % len(_data)
-        return _data[d]
+        d = int(((t - self.__creation_time)/2)*10) % len(self._data)
+        return self._data[d]
 
     def read_sepctre(self, module: int):
-        return _data[module]
+        return self._data[module]
