@@ -1,4 +1,6 @@
 import os
+import string
+
 import pyspectrum
 from PyQt5.QtCore import QEvent
 import dataLayout
@@ -51,33 +53,31 @@ class MainWindow(QtWidgets.QMainWindow):
             self.spectrometer_controller.pause()
             return True
         return QWidget.event(self, event)
-
+    def error_window(self, title: string="Error",text: string="unnamed error"):
+        mb = QtWidgets.QMessageBox()
+        mb.setWindowTitle(title)
+        mb.setText(text)
+        mb.exec_()
     def starting_inputs(self) -> Spectrometer:
         dialog = QtWidgets.QInputDialog()
         lastPicked=0
         while True:
-            text, ok = dialog.getItem(self, "Spectrum source option","Choose import option", ["Spectrometer", "File"], lastPicked, False)
+            choice, ok = dialog.getItem(self, "Spectrum source option","Choose import option", ["Spectrometer", "File"], lastPicked, False)
             if not ok:
                 break
-            if text == "File":
+            if choice == "File":
                 lastPicked=1
                 filename, ok=dialog.getText(self, "Import file", "FilePath: ")
                 while filename == "" and ok:
                     filename, ok = dialog.getText(self, "Import file", "Filename must not be empty")
                 if not os.path.isfile(filename) and ok:
-                    mb=QtWidgets.QMessageBox()
-                    mb.setWindowTitle("Error")
-                    mb.setText("File not found")
-                    mb.exec_()
+                    self.error_window(text="File not found")
                     continue
                 if ok:
                     return Spectrometer(filename)
-            if text == "Spectrometer" and ok:
+            if choice == "Spectrometer" and ok:
                 lastPicked = 0
                 try:
                     return pyspectrum.Spectrometer(pyspectrum.usb_spectrometer(0x403, 0x6014), pixel_start=2050, pixel_end=2050+1800, pixel_reverse=True)
                 except RuntimeError:
-                    mb = QtWidgets.QMessageBox()
-                    mb.setWindowTitle("Error")
-                    mb.setText("Spectrometer not found")
-                    mb.exec_()
+                    self.error_window(text="Spectrometer not found")
