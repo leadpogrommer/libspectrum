@@ -1,14 +1,13 @@
 from datetime import date
 import string
-
 import numpy as np
 from fpdf import FPDF
 from matplotlib import pyplot as plt
 from pyspectrum import Spectrum
-
-class Savior(FPDF):
+import csv
+class PdfSavior(FPDF):
     def __init__(self):
-        super(Savior, self).__init__()
+        super(PdfSavior, self).__init__()
     def footer(self) -> None:
         self.set_y(-15)
         current_date = date.today()
@@ -24,10 +23,14 @@ class Savior(FPDF):
         x = 100
         y = 150
         self.cell(x, y, str(data))
-        # pdf.set_xy(-10,-15)
-        # pdf.cell(0,0,str(current_date))
-        # for i in data:
-        # pdf.cell(x, y, str(i))
         self.output(filename + '.pdf')
-    def save_in_exel(self):
+class CsvSavior():
+    def __init__(self):
         pass
+    def save_in_csv(self,filename: string, data):
+        with open(filename+'.csv', 'w', newline='') as csvfile:
+            fieldnames = ['name', 'value']
+            writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+            writer.writeheader()
+            for i in data:
+                writer.writerow({'name': i[0], 'value': i[1]})
