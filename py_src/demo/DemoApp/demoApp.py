@@ -4,7 +4,7 @@ import string
 import pyspectrum
 from PyQt5.QtCore import QEvent
 import dataLayout
-from pyspectrum_mock import Spectrometer
+from pyspectrum_mock import FileSpectrometer
 from PyQt5.QtWidgets import QWidget, QGridLayout
 from PyQt5 import QtCore, QtWidgets
 from graphLayout import GraphLayout
@@ -58,7 +58,7 @@ class MainWindow(QtWidgets.QMainWindow):
         mb.setWindowTitle(title)
         mb.setText(text)
         mb.exec_()
-    def starting_inputs(self) -> Spectrometer:
+    def starting_inputs(self):
         dialog = QtWidgets.QInputDialog()
         lastPicked=0
         while True:
@@ -74,7 +74,7 @@ class MainWindow(QtWidgets.QMainWindow):
                     self.error_window(text="File not found")
                     continue
                 if ok:
-                    return Spectrometer(filename)
+                    return FileSpectrometer(filename)
             if choice == "Spectrometer" and ok:
                 lastPicked = 0
                 try:
