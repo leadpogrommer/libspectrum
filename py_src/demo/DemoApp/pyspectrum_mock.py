@@ -4,13 +4,15 @@ from typing import Any
 from os import path
 import pickle
 from pyspectrum import Spectrum
-class FileSpectrometer:
+from pyspectrum import Spectrometer
+class FileSpectrometer():
     _data = None
     class CustomUnpickler(pickle.Unpickler):
         def find_class(self, __module_name: str, __global_name: str) -> Any:
             if __global_name == 'Spectrum':
                 return Spectrum
             return super().find_class(__module_name, __global_name)
+
     def __init__(self, filename: string) -> None:
         self.__creation_time = time.time()
         self._data = self.CustomUnpickler(open(path.join(path.dirname(path.realpath(__file__)), filename), 'rb')).load()
