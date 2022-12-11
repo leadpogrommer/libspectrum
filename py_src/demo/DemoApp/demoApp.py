@@ -3,6 +3,7 @@ import string
 
 import pyspectrum
 from PyQt5.QtCore import QEvent
+
 import dataLayout
 from pyspectrum_mock import FileSpectrometer
 from PyQt5.QtWidgets import QWidget, QGridLayout
@@ -13,7 +14,7 @@ from spectrometerController import SpectrometerController
 
 class MainWindow(QtWidgets.QMainWindow):
     def update_func(self):
-        self.spectrum =self.spectrometer_controller.get_spectrum()
+        self.spectrum = self.spectrometer_controller.get_spectrum()
         self.spectrumLayout.update_function(self.spectrum)
 
     def __init__(self, *args, **kwargs):
@@ -23,9 +24,13 @@ class MainWindow(QtWidgets.QMainWindow):
         self.file_save_layout = dataLayout.DataLayout(self)
         self.setWindowTitle("Pyspectrum")
 
+        button = QtWidgets.QPushButton("Register")
+        button.clicked.connect(self.register)
+
         layout = QGridLayout()
         layout.addLayout(self.spectrumLayout, 0, 0)
         layout.addLayout(self.file_save_layout, 0, 1)
+        layout.addWidget(button, 1, 0)
 
         self.spectrum = None
         self.spectrometer_controller = None
@@ -40,19 +45,23 @@ class MainWindow(QtWidgets.QMainWindow):
             self.spectrometer_controller = SpectrometerController(spectrometer)
             self.spectrometer_controller.get_spectrum_update_signal().specter_updated.connect(self.update_func)
             self.spectrometer_controller.start()
+
     def event(self, event: QtCore.QEvent) -> bool:
         if event.type() == QEvent.Close:
             if self.spectrometer_controller is None:
                 return True
             self.spectrometer_controller.end()
             return True
-        if event.type() == QEvent.MouseButtonDblClick:
-            if self.spectrometer_controller is None:
-                return True
-            self.file_save_layout.calculateData(self.spectrometer_controller._spectrum)
-            self.spectrometer_controller.pause()
-            return True
         return QWidget.event(self, event)
+
+    def register(self):
+        if self.spectrometer_controller is None:
+            return
+        if self.spectrometer_controller.is_paused():
+            self.spectrometer_controller.pause()
+            return
+        self.file_save_layout.calculateData(self.spectrometer_controller._spectrum)
+        self.spectrometer_controller.pause()
 
     def error_window(self, title: string = "Error", text: string = "unnamed error"):
         mb = QtWidgets.QMessageBox()
