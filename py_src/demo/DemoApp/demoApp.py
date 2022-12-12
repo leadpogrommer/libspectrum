@@ -19,21 +19,33 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def _createMenuBar(self):
         menuBar = self.menuBar()
+
         file = QMenu("&File", self)
-        spectrometer=QMenu("&Spectrometer",self)
+        file_load = QAction("load data", self)
+        file_load.triggered.connect(self.open_file)
+
         export = QMenu("&Export", self)
         export_pdf = QMenu("&PDF", self)
+        export_pdf_receiver=QAction("Set receiver",self)
+        export_pdf_receiver.triggered.connect(self.file_save_layout.set_receiver)
+
+        export_pdf_source_model=QAction("Set source model",self)
+        export_pdf_source_model.triggered.connect(self.file_save_layout.set_source_model)
+        export_pdf.addAction(export_pdf_source_model)
+        export_pdf.addAction(export_pdf_receiver)
         export_csv = QMenu("&CSV", self)
 
-        spectrometer_connect=QMenu("&connect",self)
-        spectrometer.addMenu(spectrometer_connect)
+        spectrometer = QMenu("&Spectrometer", self)
+        spectrometer_connect = QAction("connect", self)
+        spectrometer.addAction(spectrometer_connect)
+        spectrometer_connect.triggered.connect(self.connect_spectrometer)
 
         export.addMenu(export_csv)
         export.addMenu(export_pdf)
+        file.addAction(file_load)
         menuBar.addMenu(file)
         menuBar.addMenu(spectrometer)
         menuBar.addMenu(export)
-
 
     def _init_GUI(self):
         self.spectrumLayout = GraphLayout(self)
@@ -51,11 +63,7 @@ class MainWindow(QtWidgets.QMainWindow):
     def _init_spectrometer(self):
         self.spectrum = None
         self.spectrometer_controller = None
-        spectrometer = self._starting_inputs()
-        if spectrometer is not None:
-            self.spectrometer_controller = SpectrometerController(spectrometer)
-            self.spectrometer_controller.get_spectrum_update_signal().specter_updated.connect(self.update_func)
-            self.spectrometer_controller.start()
+        self._starting_inputs()
 
     def __init__(self, *args, **kwargs):
         super(MainWindow, self).__init__(*args, **kwargs)
@@ -65,11 +73,15 @@ class MainWindow(QtWidgets.QMainWindow):
         self.show()
         self._init_spectrometer()
 
+    def stop_controller(self):
+        if self.spectrometer_controller is None:
+            return
+        else:
+            self.spectrometer_controller.end()
+
     def event(self, event: QtCore.QEvent) -> bool:
         if event.type() == QEvent.Close:
-            if self.spectrometer_controller is None:
-                return True
-            self.spectrometer_controller.end()
+            self.stop_controller()
             return True
         return QWidget.event(self, event)
 
@@ -79,8 +91,8 @@ class MainWindow(QtWidgets.QMainWindow):
         if self.spectrometer_controller.is_paused():
             self.spectrometer_controller.pause()
             return
-        self.file_save_layout.calculateData(self.spectrometer_controller.get_spectrum)
         self.spectrometer_controller.pause()
+        self.file_save_layout.calculateData(self.spectrometer_controller.get_spectrum())
 
     def error_window(self, title: string = "Error", text: string = "unnamed error"):
         mb = QtWidgets.QMessageBox(parent=self)
@@ -90,13 +102,19 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def connect_spectrometer(self):
         try:
-            return pyspectrum.Spectrometer(pyspectrum.usb_spectrometer(0x403, 0x6014), pixel_start=2050,
-                                           pixel_end=2050 + 1800, pixel_reverse=True)
+            self.spectrometer_controller = SpectrometerController(
+                pyspectrum.Spectrometer(pyspectrum.usb_spectrometer(0x403, 0x6014), pixel_start=2050,
+                                        pixel_end=2050 + 1800, pixel_reverse=True))
         except RuntimeError:
             self.error_window(text="Spectrometer not found")
             return False
+        self.stop_controller()
+        self.spectrometer_controller.get_spectrum_update_signal().specter_updated.connect(self.update_func)
+        self.spectrometer_controller.start()
+        return True
 
     def open_file(self):
+        self.stop_controller()
         dialog = QtWidgets.QInputDialog()
         filename, ok = dialog.getText(self, "Import file", "FilePath: ")
         while filename == "" and ok:
@@ -105,7 +123,11 @@ class MainWindow(QtWidgets.QMainWindow):
             self.error_window(text="File not found")
             return False
         if ok:
-            return FileSpectrometer(filename)
+            self.stop_controller()
+            self.spectrometer_controller = SpectrometerController(FileSpectrometer(filename))
+            self.spectrometer_controller.get_spectrum_update_signal().specter_updated.connect(self.update_func)
+            self.spectrometer_controller.start()
+            return True
 
     def _starting_inputs(self):
         dialog = QtWidgets.QInputDialog()
@@ -117,11 +139,11 @@ class MainWindow(QtWidgets.QMainWindow):
                 break
             if choice == "File":
                 lastPicked = 1
-                file=self.open_file()
-                if(file):
-                    return file
+                file = self.open_file()
+                if (file):
+                    return
             if choice == "Spectrometer" and ok:
                 lastPicked = 0
-                spectrometer=self.connect_spectrometer()
-                if(spectrometer):
-                    return spectrometer
+                spectrometer = self.connect_spectrometer()
+                if (spectrometer):
+                    return

@@ -24,7 +24,7 @@ class SpectrometerController(Thread):
     def end(self) -> None:
         self._running = False
 
-    def is_paused(self)->bool:
+    def is_paused(self) -> bool:
         return self._isPaused
 
     def get_spectrum_update_signal(self) -> QObject:
