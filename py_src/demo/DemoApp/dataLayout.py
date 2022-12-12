@@ -7,7 +7,7 @@ from savior import PdfSavior, CsvSavior
 
 class DataLayout(QBoxLayout):
     def __init__(self, parent: QWidget):
-        super(QBoxLayout, self).__init__(QBoxLayout.Direction(3),parent=parent)
+        super(QBoxLayout, self).__init__(QBoxLayout.Direction(3), parent=parent)
         self.mainWindow = parent
         self._csv_check = QtWidgets.QCheckBox(".csv")
         self._pdf_check = QtWidgets.QCheckBox(".pdf")
@@ -28,6 +28,9 @@ class DataLayout(QBoxLayout):
 
     def _enable_button(self):
         self._save_button.setDisabled(not self._pdf_check.isChecked() and not self._csv_check.isChecked())
+
+    def additional_info_window(self):
+        pass
 
     def _save(self):
         if (self._spectrum == None):
