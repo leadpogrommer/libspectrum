@@ -108,7 +108,7 @@ class MainWindow(QtWidgets.QMainWindow):
         except RuntimeError:
             self.error_window(text="Spectrometer not found")
             return False
-        self.stop_controller()
+        #self.stop_controller()
         self.spectrometer_controller.get_spectrum_update_signal().specter_updated.connect(self.update_func)
         self.spectrometer_controller.start()
         return True
@@ -147,3 +147,4 @@ class MainWindow(QtWidgets.QMainWindow):
                 spectrometer = self.connect_spectrometer()
                 if (spectrometer):
                     return
+# Todo: add profile data, add dark spectrum, add file choose window
