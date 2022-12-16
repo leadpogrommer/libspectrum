@@ -43,7 +43,7 @@ class DataLayout(QBoxLayout):
             self._receiver = name
 
     def _save(self):
-        if (self._spectrum == None):
+        if self._spectrum is None:
             self.mainWindow.error_window(text="No spectrum registered")
             return
         dialog = QtWidgets.QInputDialog()
@@ -55,11 +55,11 @@ class DataLayout(QBoxLayout):
         if ok:
             try:
                 if self._pdf_check.isChecked():
-                    _pdf_savior = PdfSavior(self._receiver,self._source_model)
-                    _pdf_savior.save_in_pdf(filename, self._calculated_data, self._spectrum)
+                    _pdf_savior = PdfSavior(filename, self._calculated_data, self._spectrum,self._receiver,self._source_model)
+                    _pdf_savior.save()
                 if self._csv_check.isChecked():
-                    _csv_savior = CsvSavior()
-                    _csv_savior.save_in_csv(filename, self._calculated_data)
+                    _csv_savior = CsvSavior(filename, self._calculated_data)
+                    _csv_savior.save()
             except Exception:
                 self.mainWindow.error_window(text="Error file save")
         self._pdf_check.setDisabled(False)

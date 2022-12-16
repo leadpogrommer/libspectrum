@@ -1,5 +1,5 @@
 import os
-import string
+
 
 import pyspectrum
 from PyQt5.QtCore import QEvent
@@ -94,7 +94,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.spectrometer_controller.pause()
         self.file_save_layout.calculateData(self.spectrometer_controller.get_spectrum())
 
-    def error_window(self, title: string = "Error", text: string = "unnamed error"):
+    def error_window(self, title: str = "Error", text: str = "unnamed error"):
         mb = QtWidgets.QMessageBox(parent=self)
         mb.setWindowTitle(title)
         mb.setText(text)
