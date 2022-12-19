@@ -6,19 +6,53 @@ from matplotlib import pyplot as plt
 from pyspectrum import Spectrum
 import csv
 
+
 class Savior(ABC):
     @abstractmethod
     def save(self):
         pass
 
-class PdfSavior(FPDF,Savior):
-    def __init__(self,filename: str, data:(str,float), spectrum: Spectrum, receiver: str = "", source_model: str= "unnamed"):
+
+class Saver:
+    def _save_in_pdf(self):
+        PdfSavior(self._filename, self._data, self._spectrum, self._receiver, self._source_model).save()
+
+    def _save_in_csv(self):
+        CsvSavior(self._filename, self._data).save()
+
+    _format_dict = {
+        "pdf": _save_in_pdf,
+        "csv": _save_in_csv
+    }
+
+    def __init__(self, file_format: str):
+        self._receiver = ""
+        self._source_model = ""
+        self._file_save_format = file_format
+
+    def set_source_model(self, name: str):
+        self._source_model = name
+
+    def set_receiver(self, name: str):
+        self._receiver = name
+
+    def save(self, filname: str, spectum: Spectrum, data):
+        self._data = data
+        self._spectrum = spectum
+        self._filename = filname
+        #выполняет метод из словаря можно заменить if'ами
+        self._format_dict[self._file_save_format](self)
+
+
+class PdfSavior(FPDF, Savior):
+    def __init__(self, filename: str, data, spectrum: Spectrum, receiver: str = "",
+                 source_model: str = "unnamed"):
         super(PdfSavior, self).__init__()
         self._receiver = receiver
         self._source_model = source_model
-        self._filename=filename
-        self._data=data
-        self._spectrum=spectrum
+        self._filename = filename
+        self._data = data
+        self._spectrum = spectrum
 
     def header(self) -> None:
         self.set_y(15)
@@ -48,10 +82,9 @@ class PdfSavior(FPDF,Savior):
 
 
 class CsvSavior(Savior):
-    def __init__(self, filename: str, data:(str,float)):
-        self._filename=filename
-        self._data=data
-
+    def __init__(self, filename: str, data):
+        self._filename = filename
+        self._data = data
 
     def save(self):
         with open(self._filename + '.csv', 'w', newline='') as csvfile:
