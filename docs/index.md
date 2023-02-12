@@ -1,0 +1,3 @@
+# Pyspectrum api reference
+
+::: pyspectrum

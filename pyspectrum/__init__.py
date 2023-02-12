@@ -1,3 +1,7 @@
+"""
+The pyspectrum module allows communication with usb spectrometer from python code
+"""
+
 import dataclasses
 import json
 import os.path
@@ -34,6 +38,9 @@ class Data(SpectrumInfo):
 
 @dataclasses.dataclass(repr=False)
 class Spectrum(SpectrumInfo):
+    """
+    Hello
+    """
     clipped: np.array
     samples: np.array
     wavelength: np.array
@@ -88,7 +95,12 @@ class Spectrometer:
             raise ValueError("Profiling data has incorrect number of pixels")
         self.wavelengths = wavelengths
 
-    def read_raw_spectrum(self, n_times: int):
+    def read_raw_spectrum(self, n_times: int) -> Data:
+        """Read spectrum from the device
+
+        :param n_times:
+        :return:
+        """
         data = self.device.readFrame(n_times)  # type: internal.RawSpectrum
         samples = data.samples[:, self.pixel_start:self.pixel_end][:, ::self.pixel_reverse]
         clipped = data.clipped[:, self.pixel_start:self.pixel_end][:, ::self.pixel_reverse]

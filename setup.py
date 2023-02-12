@@ -129,7 +129,7 @@ setup(
     long_description="",
     package_data={'pyspectrum.demo': ['*']},
     ext_modules=[CMakeExtension("cmake_example")],
-    package_dir={'pyspectrum': 'py_src'},
+    package_dir={'pyspectrum': 'pyspectrum'},
     packages=['pyspectrum', 'pyspectrum.demo'],
     cmdclass={"build_ext": CMakeBuild},
     zip_safe=False,

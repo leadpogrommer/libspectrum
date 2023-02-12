@@ -1,0 +1,16 @@
+site_name: Pyspectrum documentation
+theme:
+  name: material
+site_dir: docs_generated
+watch:
+  - pyspectrum
+plugins:
+  - search
+  - mkdocstrings:
+      default_handler: python
+      handlers:
+        python:
+          options:
+            show_source: false
+            paths: [.]
+            docstring_style: sphinx
