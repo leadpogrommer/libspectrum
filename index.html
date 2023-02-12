@@ -233,8 +233,29 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
+  <a href="#pyspectrum.Spectrometer.__init__" class="md-nav__link">
+    __init__()
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#pyspectrum.Spectrometer.read_raw_spectrum" class="md-nav__link">
     read_raw_spectrum()
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pyspectrum.Spectrometer.read_spectrum" class="md-nav__link">
+    read_spectrum()
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pyspectrum.Spectrometer.set_timer" class="md-nav__link">
+    set_timer()
   </a>
   
 </li>
@@ -245,8 +266,8 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#pyspectrum.Spectrum" class="md-nav__link">
-    Spectrum
+  <a href="#pyspectrum.usb_spectrometer" class="md-nav__link">
+    usb_spectrometer()
   </a>
   
 </li>
@@ -301,8 +322,29 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
+  <a href="#pyspectrum.Spectrometer.__init__" class="md-nav__link">
+    __init__()
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#pyspectrum.Spectrometer.read_raw_spectrum" class="md-nav__link">
     read_raw_spectrum()
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pyspectrum.Spectrometer.read_spectrum" class="md-nav__link">
+    read_spectrum()
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pyspectrum.Spectrometer.set_timer" class="md-nav__link">
+    set_timer()
   </a>
   
 </li>
@@ -313,8 +355,8 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#pyspectrum.Spectrum" class="md-nav__link">
-    Spectrum
+  <a href="#pyspectrum.usb_spectrometer" class="md-nav__link">
+    usb_spectrometer()
   </a>
   
 </li>
@@ -370,6 +412,8 @@
 
   <div class="doc doc-contents ">
 
+  
+      <p>High-level class to work with different spectrometers. Currently only Usb spectrometer is supported</p>
 
 
 
@@ -389,8 +433,150 @@
 
 
 
+<h3 id="pyspectrum.Spectrometer.__init__" class="doc doc-heading">
+<code class="highlight language-python"><span class="fm">__init__</span><span class="p">(</span><span class="n">device</span><span class="p">,</span> <span class="n">pixel_start</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">pixel_end</span><span class="o">=</span><span class="mi">4096</span><span class="p">,</span> <span class="n">pixel_reverse</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">dark_signal_path</span><span class="o">=</span><span class="s1">&#39;dark_signal.dat&#39;</span><span class="p">)</span></code>
+
+</h3>
+
+
+  <div class="doc doc-contents ">
+  
+      
+
+  <p><strong>Parameters:</strong></p>
+  <table>
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Type</th>
+        <th>Description</th>
+        <th>Default</th>
+      </tr>
+    </thead>
+    <tbody>
+        <tr>
+          <td><code>device</code></td>
+          <td>
+                <code><span title="_pyspectrum">internal</span>.<span title="_pyspectrum.RawSpectrometer">RawSpectrometer</span></code>
+          </td>
+          <td><p>Low-level device object</p></td>
+          <td>
+              <em>required</em>
+          </td>
+        </tr>
+        <tr>
+          <td><code>pixel_start</code></td>
+          <td>
+                <code>int</code>
+          </td>
+          <td><p>Index of the first usable diode</p></td>
+          <td>
+                <code>0</code>
+          </td>
+        </tr>
+        <tr>
+          <td><code>pixel_end</code></td>
+          <td>
+                <code>int</code>
+          </td>
+          <td><p>Index of the last usable diode</p></td>
+          <td>
+                <code>4096</code>
+          </td>
+        </tr>
+        <tr>
+          <td><code>pixel_reverse</code></td>
+          <td>
+                <code>bool</code>
+          </td>
+          <td><p>If True, diode order in frames will be reversed</p></td>
+          <td>
+                <code>False</code>
+          </td>
+        </tr>
+        <tr>
+          <td><code>dark_signal_path</code></td>
+          <td>
+                <code>str</code>
+          </td>
+          <td><p>Default path to load and save dark signal</p></td>
+          <td>
+                <code>&#39;dark_signal.dat&#39;</code>
+          </td>
+        </tr>
+    </tbody>
+  </table>
+
+  </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+
 <h3 id="pyspectrum.Spectrometer.read_raw_spectrum" class="doc doc-heading">
 <code class="highlight language-python"><span class="n">read_raw_spectrum</span><span class="p">(</span><span class="n">n_times</span><span class="p">)</span></code>
+
+</h3>
+
+
+  <div class="doc doc-contents ">
+  
+      <p>Read spectrum from the device (without additional information)</p>
+
+  <p><strong>Parameters:</strong></p>
+  <table>
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Type</th>
+        <th>Description</th>
+        <th>Default</th>
+      </tr>
+    </thead>
+    <tbody>
+        <tr>
+          <td><code>n_times</code></td>
+          <td>
+                <code>int</code>
+          </td>
+          <td><p>Amount of frames to read</p></td>
+          <td>
+              <em>required</em>
+          </td>
+        </tr>
+    </tbody>
+  </table>
+
+  <p><strong>Returns:</strong></p>
+  <table>
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+        <tr>
+          <td>
+                <code><span title="pyspectrum.Data">Data</span></code>
+          </td>
+          <td><p>Received spectrum data</p></td>
+        </tr>
+    </tbody>
+  </table>
+
+  </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+
+<h3 id="pyspectrum.Spectrometer.read_spectrum" class="doc doc-heading">
+<code class="highlight language-python"><span class="n">read_spectrum</span><span class="p">(</span><span class="n">n_times</span><span class="p">)</span></code>
 
 </h3>
 
@@ -415,7 +601,7 @@
           <td>
                 <code>int</code>
           </td>
-          <td></td>
+          <td><p>Amount of frames to read</p></td>
           <td>
               <em>required</em>
           </td>
@@ -434,9 +620,51 @@
     <tbody>
         <tr>
           <td>
-                <code><span title="pyspectrum.Data">Data</span></code>
+                <code><span title="pyspectrum.Spectrum">Spectrum</span></code>
           </td>
-          <td></td>
+          <td><p>Received spectrum</p></td>
+        </tr>
+    </tbody>
+  </table>
+
+  </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+
+<h3 id="pyspectrum.Spectrometer.set_timer" class="doc doc-heading">
+<code class="highlight language-python"><span class="n">set_timer</span><span class="p">(</span><span class="n">millis</span><span class="p">)</span></code>
+
+</h3>
+
+
+  <div class="doc doc-contents ">
+  
+      <p>Set frame exposure time</p>
+
+  <p><strong>Parameters:</strong></p>
+  <table>
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Type</th>
+        <th>Description</th>
+        <th>Default</th>
+      </tr>
+    </thead>
+    <tbody>
+        <tr>
+          <td><code>millis</code></td>
+          <td>
+                <code>int</code>
+          </td>
+          <td><p>Exposure time in milliseconds</p></td>
+          <td>
+              <em>required</em>
+          </td>
         </tr>
     </tbody>
   </table>
@@ -453,50 +681,76 @@
 
 </div>
 
-<div class="doc doc-object doc-class">
+
+<div class="doc doc-object doc-function">
 
 
 
-<h2 id="pyspectrum.Spectrum" class="doc doc-heading">
-        <code>Spectrum</code>
-
-  
-  <span class="doc doc-labels">
-      <small class="doc doc-label doc-label-dataclass"><code>dataclass</code></small>
-  </span>
+<h2 id="pyspectrum.usb_spectrometer" class="doc doc-heading">
+<code class="highlight language-python"><span class="n">usb_spectrometer</span><span class="p">(</span><span class="n">vid</span><span class="p">,</span> <span class="n">pid</span><span class="p">)</span></code>
 
 </h2>
 
 
   <div class="doc doc-contents ">
-      <p class="doc doc-class-bases">
-        Bases: <code><span title="pyspectrum.SpectrumInfo">SpectrumInfo</span></code></p>
-
   
-      <p>Hello</p>
+      <p>Create usb spectrometer for Spectrometer creation</p>
 
+  <p><strong>Parameters:</strong></p>
+  <table>
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Type</th>
+        <th>Description</th>
+        <th>Default</th>
+      </tr>
+    </thead>
+    <tbody>
+        <tr>
+          <td><code>vid</code></td>
+          <td>
+                <code>int</code>
+          </td>
+          <td><p>Usb vendor id</p></td>
+          <td>
+              <em>required</em>
+          </td>
+        </tr>
+        <tr>
+          <td><code>pid</code></td>
+          <td>
+                <code>int</code>
+          </td>
+          <td><p>Usb product id</p></td>
+          <td>
+              <em>required</em>
+          </td>
+        </tr>
+    </tbody>
+  </table>
 
-
-  
-
-  <div class="doc doc-children">
-
-
-
-
-
-
-
-
-
-
-
-  </div>
+  <p><strong>Returns:</strong></p>
+  <table>
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+        <tr>
+          <td>
+                <code><span title="_pyspectrum">internal</span>.<span title="_pyspectrum.UsbRawSpectrometer">UsbRawSpectrometer</span></code>
+          </td>
+          <td><p>Device object needed for Spectrometer creation</p></td>
+        </tr>
+    </tbody>
+  </table>
 
   </div>
 
 </div>
-
 
 
 
