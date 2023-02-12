@@ -38,29 +38,32 @@ class Data(SpectrumInfo):
 
 @dataclasses.dataclass(repr=False)
 class Spectrum(SpectrumInfo):
-    """
-    Hello
-    """
     clipped: np.array
     samples: np.array
     wavelength: np.array
 
 
 class Spectrometer:
+    """High-level class to work with different spectrometers. Currently only Usb spectrometer is supported"""
     device: internal.RawSpectrometer
 
-    def __init__(self, device: internal.RawSpectrometer, pixel_start=0, pixel_end=4096, pixel_reverse=False,
-                 dark_signal_path=None):
+    def __init__(self, device: internal.RawSpectrometer, pixel_start: int = 0, pixel_end: int = 4096,
+                 pixel_reverse: bool = False,
+                 dark_signal_path: str = 'dark_signal.dat'):
+        """
+        :param device: Low-level device object
+        :param pixel_start: Index of the first usable diode
+        :param pixel_end: Index of the last usable diode
+        :param pixel_reverse: If True, diode order in frames will be reversed
+        :param dark_signal_path: Default path to load and save dark signal
+        """
         self.device = device
         self.dark_signal = np.zeros((pixel_end - pixel_start))
         self.wavelengths = np.arange((pixel_end - pixel_start))
         self.pixel_start = pixel_start
         self.pixel_end = pixel_end
         self.pixel_reverse = -1 if pixel_reverse else 1
-        if dark_signal_path is None:
-            self.dark_signal_path = 'dark_signal.dat'
-        else:
-            self.dark_signal_path = dark_signal_path
+        self.dark_signal_path = dark_signal_path
 
     def read_dark_signal(self, n_times: int) -> None:
         data = self.read_raw_spectrum(n_times).samples
@@ -96,10 +99,10 @@ class Spectrometer:
         self.wavelengths = wavelengths
 
     def read_raw_spectrum(self, n_times: int) -> Data:
-        """Read spectrum from the device
+        """Read spectrum from the device (without additional information)
 
-        :param n_times:
-        :return:
+        :param n_times: Amount of frames to read
+        :return: Received spectrum data
         """
         data = self.device.readFrame(n_times)  # type: internal.RawSpectrum
         samples = data.samples[:, self.pixel_start:self.pixel_end][:, ::self.pixel_reverse]
@@ -107,12 +110,25 @@ class Spectrometer:
         return Data(clipped, samples)
 
     def read_spectrum(self, n_times: int) -> Spectrum:
+        """Read spectrum from the device
+
+        :param n_times: Amount of frames to read
+        :return: Received spectrum
+        """
         data = self.read_raw_spectrum(n_times)
         return Spectrum(data.clipped, data.samples - self.dark_signal, self.wavelengths)
 
     def set_timer(self, millis: int) -> None:
+        """Set frame exposure time
+        :param millis: Exposure time in milliseconds
+        """
         self.device.setTimer(millis)
 
 
 def usb_spectrometer(vid: int, pid: int) -> internal.UsbRawSpectrometer:
+    """Create usb spectrometer for Spectrometer creation
+    :param vid: Usb vendor id
+    :param pid: Usb product id
+    :return: Device object needed for Spectrometer creation
+    """
     return internal.UsbRawSpectrometer(vid, pid)
