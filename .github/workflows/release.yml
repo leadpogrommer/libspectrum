@@ -33,7 +33,7 @@ jobs:
     
     - uses: kittaakos/upload-artifact-as-is@v0
       with:
-        path: ${{github.workspace}}/*.whl
+        path: ${{github.workspace}}/pyspectrum-*-manylinux*.whl
 
   build-linux:
     strategy:
