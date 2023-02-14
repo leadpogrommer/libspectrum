@@ -1,11 +1,15 @@
 site_name: Pyspectrum documentation
 theme:
   name: material
+  features:
+    - navigation.instant
+    - navigation.tabs
 site_dir: docs_generated
 watch:
   - pyspectrum
 plugins:
   - search
+  - autorefs
   - mkdocstrings:
       default_handler: python
       handlers:
@@ -14,3 +18,9 @@ plugins:
             show_source: false
             paths: [.]
             docstring_style: sphinx
+            show_root_toc_entry: false
+            members_order: source
+nav:
+  - 'index.md'
+  - 'installation.md'
+  - 'reference.md'

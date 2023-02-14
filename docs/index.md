@@ -1,3 +1,9 @@
-# Pyspectrum api reference
+---
+hide:
+- navigation
+---
+# Pyspectrum
+[Установка библиотеки](installation)  
+[Документация API](reference)
 
-::: pyspectrum
+TODO: (здесь будет пример использования)
