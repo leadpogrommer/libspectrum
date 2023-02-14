@@ -70,7 +70,7 @@ jobs:
     
     - uses: kittaakos/upload-artifact-as-is@v0
       with:
-        path: ${{github.workspace}}/dist/*-manylinux*.whl
+        path: ${{github.workspace}}/dist/pyspectrum-*-manylinux*.whl
 
   upload-docs:
     runs-on: ubuntu-latest
