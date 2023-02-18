@@ -24,10 +24,6 @@ jobs:
       with:
         python-version: ${{matrix.python-version}}
 
-    - uses: lukka/run-vcpkg@v10.6
-      with:
-        vcpkgJsonGlob: vcpkg.json
-
     - run: python -m pip install cmake
     - run: python -m pip wheel .
     

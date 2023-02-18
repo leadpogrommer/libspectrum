@@ -1,8 +1,7 @@
 #pragma once
 
 #include "RawSpectrometer.h"
-#include <ftdi.hpp>
-
+#include "UsbContext.h"
 
 #define COMMAND_WRITE_CR 0x01
 #define COMMAND_WRITE_TIMER 0x02
@@ -49,7 +48,7 @@ public:
 private:
     const int pixel_number = 0x1006;
     uint16_t sequenceNumber = 1;
-    Ftdi::Context context;
+    UsbContext context;
 
     void readExactly(uint8_t* buff, int amount);
     DeviceReply sendCommand(uint8_t code, uint32_t data);
