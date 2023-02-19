@@ -12,12 +12,12 @@ class LoadError(Exception):
         super().__init__(f'File {path} is not valid')
 
 
-class SpectrumInfo():
+class SpectrumInfo(): # TODO: Merge into Data
     """
     Базовый класс для `Data` и `Spectrum`.
     """
     clipped: np.array
-    samples: np.array
+    samples: np.array # TODO: Reaname to Amount
 
     @property
     def n_times(self) -> int:
@@ -72,7 +72,7 @@ class Data(SpectrumInfo):
 
 @dataclasses.dataclass(repr=False)
 class Spectrum(SpectrumInfo):
-    """Обработанные данные со спектрометра. Содержит в себе информацию о длинах волн измерения"""
+    """Обработанные данные со спектрометра. Содержит в себе информацию о длинах волн измерения""" # TODO: mentiaon that dark signal was substracted
     clipped: np.array
     """Массив boolean значений. Если `clipped[i]==True`, `samples[i]` содержит зашкаленное значение"""
     samples: np.array
@@ -110,7 +110,7 @@ class Spectrometer:
 
     def __init__(self, device: internal.RawSpectrometer, pixel_start: int = 0, pixel_end: int = 4096,
                  pixel_reverse: bool = False,
-                 dark_signal_path: str = 'dark_signal.dat'):
+                 dark_signal_path: str = 'dark_signal.dat'): # TODO: Move params to FactoryConfig
         """
         :param device: Низкоуровневый объект устройства. В данный момент может быть получен только через `usb_spectrometer`
         :param pixel_start: Номер первого значащего диода в линейке
@@ -194,7 +194,7 @@ class Spectrometer:
         data = self.read_raw_spectrum(n_times)
         return Spectrum(data.clipped, data.samples - self.dark_signal, self.wavelengths)
 
-    def set_timer(self, millis: int) -> None:
+    def set_timer(self, millis: int) -> None: # TODO: replace with setConfig(exposure, n_times, dark_signal, profile_path)
         """Установить время экспозиции
         :param millis: Время экспозиции в миллисекундах
         """
