@@ -1,8 +1,6 @@
 name: Release
 
-on:
-  push:
-    branches: master
+on: [push]
 
 jobs:
   build-windows:
@@ -73,6 +71,7 @@ jobs:
         path: ${{github.workspace}}/dist/pyspectrum-*-manylinux*.whl
 
   upload-docs:
+    if: ${{github.ref == 'refs/heads/master'}}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
