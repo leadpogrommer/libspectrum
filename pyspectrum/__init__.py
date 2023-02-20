@@ -12,39 +12,33 @@ class LoadError(Exception):
         super().__init__(f'File {path} is not valid')
 
 
-class SpectrumInfo(): # TODO: Merge into Data
-    """
-    Базовый класс для `Data` и `Spectrum`.
-    """
+@dataclasses.dataclass(repr=False)
+class Data:
+    """Сырые данные, полученные со спектрометра"""
+    
     clipped: np.array
-    samples: np.array # TODO: Reaname to Amount
+    """Массив boolean значений. Если `clipped[i]==True`, `amount[i]` содержит зашкаленное значение"""
+    amount: np.array
+    """Двумерный массив данных измерения. Первый индекс - номер кадра, второй - номер сэмпла в кадре"""
 
     @property
     def n_times(self) -> int:
         """Количество кадров"""
-        return self.samples.shape[0]
+        return self.amount.shape[0]
 
     @property
-    def n_samples(self) -> int:
+    def n_amount(self) -> int:
         """Размерность кадра"""
-        return self.samples.shape[1]
+        return self.amount.shape[1]
 
     @property
     def shape(self) -> tuple[int, int]:
-        """Форма массива `samples`"""
-        return self.samples.shape
-
-    def __repr__(self) -> str:
-        return f'{type(self).__name__}({self.n_times = }, {self.n_samples = })'
-
-
-@dataclasses.dataclass(repr=False)
-class Data(SpectrumInfo):
-    """Сырые данные, полученные со спектрометра"""
-    clipped: np.array
-    """Массив boolean значений. Если `clipped[i]==True`, `samples[i]` содержит зашкаленное значение"""
-    samples: np.array
-    """Двумерный массив данных измерения. Первый индекс - номер кадра, второй - номер сэмпла в кадре"""
+        """Форма массива `amount`"""
+        return self.amount.shape
+    
+    @staticmethod
+    def _serializable_fields():
+        return ['clipped', 'amount']
 
     def save(self, path: str):
         """
@@ -52,10 +46,10 @@ class Data(SpectrumInfo):
         :param path: Путь к файлу
         """
         with open(path, 'wb') as f:
-            np.savez(f, clipped=self.clipped, samples=self.samples)
-
-    @staticmethod
-    def load(path: str) -> 'Data':
+            np.savez(f, **{field: self.__dict__[field] for field in self._serializable_fields()})
+    
+    @classmethod
+    def load(cls, path: str) -> 'Data':
         """
         Прочитать объект из файла
         :param path: Путь к файлу
@@ -65,43 +59,28 @@ class Data(SpectrumInfo):
             if not isinstance(npz, NpzFile):
                 raise LoadError(path)
             try:
-                return Data(npz['clipped'], npz['samples'])
+                return cls(**{field: npz[field] for field in cls._serializable_fields()})
             except KeyError:
                 raise LoadError(path)
 
+    def __repr__(self) -> str:
+        return f'{type(self).__name__}({self.n_times = }, {self.n_amount = })'
+
 
 @dataclasses.dataclass(repr=False)
-class Spectrum(SpectrumInfo):
-    """Обработанные данные со спектрометра. Содержит в себе информацию о длинах волн измерения""" # TODO: mentiaon that dark signal was substracted
-    clipped: np.array
-    """Массив boolean значений. Если `clipped[i]==True`, `samples[i]` содержит зашкаленное значение"""
-    samples: np.array
-    """Двумерный массив данных измерения. Первый индекс - номер кадра, второй - номер сэмпла в кадре. Из данных вычтен темновой сигнал"""
+class Spectrum(Data):
+    """
+    Обработанные данные со спектрометра. Содержит в себе информацию о длинах волн измерения.
+    В данный момент обработка заключается в вычитании темнового сигнала.
+    """
+
     wavelength: np.array
     """Массив длин волн измерений"""
 
-    def save(self, path: str):
-        """
-        Сохранить объект в файл
-        :param path: Путь к файлу
-        """
-        with open(path, 'wb') as f:
-            np.savez(f, clipped=self.clipped, samples=self.samples, wavelength=self.wavelength)
-
     @staticmethod
-    def load(path: str) -> 'Spectrum':
-        """
-        Прочитать объект из файла
-        :param path: Путь к файлу
-        :return: Загруженный объект
-        """
-        with np.load(path) as npz:
-            if not isinstance(npz, NpzFile):
-                raise LoadError(path)
-            try:
-                return Spectrum(npz['clipped'], npz['samples'], npz['wavelength'])
-            except KeyError:
-                raise LoadError(path)
+    def _serializable_fields():
+        return ['clipped', 'amount', 'wavelength']
+
 
 
 class Spectrometer:
@@ -131,7 +110,7 @@ class Spectrometer:
         Считать темновой сигнал
         :param n_times: Количество кадров. В качестве темнового сигнала будет использоваться среднее значение для для каждого диода
         """
-        data = self.read_raw_spectrum(n_times).samples
+        data = self.read_raw_spectrum(n_times).amount
         self.dark_signal = np.mean(data, axis=0)
 
     def save_dark_signal(self):
@@ -140,7 +119,7 @@ class Spectrometer:
 
     def load_dark_signal(self):
         """Загрузить темновой сигнал с диска"""
-        data = Data.load(self.dark_signal_path).samples
+        data = Data.load(self.dark_signal_path).amount
         if data.shape != self.dark_signal.shape:
             raise ValueError('Saved dark signal shape is different')
         self.dark_signal = data
@@ -181,9 +160,9 @@ class Spectrometer:
         :return: Полученные данные без предварительной обработки
         """
         data = self.device.readFrame(n_times)  # type: internal.RawSpectrum
-        samples = data.samples[:, self.pixel_start:self.pixel_end][:, ::self.pixel_reverse]
+        amount = data.amount[:, self.pixel_start:self.pixel_end][:, ::self.pixel_reverse]
         clipped = data.clipped[:, self.pixel_start:self.pixel_end][:, ::self.pixel_reverse]
-        return Data(clipped, samples)
+        return Data(clipped, amount)
 
     def read_spectrum(self, n_times: int) -> Spectrum:
         """Получить данные с устройства
@@ -192,7 +171,7 @@ class Spectrometer:
         :return: Полученные данные
         """
         data = self.read_raw_spectrum(n_times)
-        return Spectrum(data.clipped, data.samples - self.dark_signal, self.wavelengths)
+        return Spectrum(data.clipped, data.amount - self.dark_signal, self.wavelengths)
 
     def set_timer(self, millis: int) -> None: # TODO: replace with setConfig(exposure, n_times, dark_signal, profile_path)
         """Установить время экспозиции
