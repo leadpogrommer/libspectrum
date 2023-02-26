@@ -1,5 +1,7 @@
+from pyspectrum import Spectrometer
+
 def graph_demo():
-    from pyspectrum import Spectrometer, usb_spectrometer
+    from pyspectrum import spectrometer, usb_spectrometer
     import numpy as np
     import matplotlib.pyplot as plt
     import matplotlib
@@ -53,6 +55,6 @@ def graph_demo():
 
         ax.clear()
         axs[1].clear()
-        ax.plot(data.wavelength, np.mean(data.samples, axis=0))
+        ax.plot(data.wavelength, np.mean(data.amount, axis=0))
         axs[1].plot(data.wavelength, np.max(data.clipped, axis=0))
         plt.pause(0.05)

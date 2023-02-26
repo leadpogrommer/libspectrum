@@ -1,5 +1,5 @@
 def exposures_test():
-    from pyspectrum import Spectrometer, usb_spectrometer
+    from pyspectrum import spectrometer, usb_spectrometer
     from time import time
 
     exposures = [1, 2, 3, 4, 5, 10, 20, 50, 100, 200, 250, 500]
