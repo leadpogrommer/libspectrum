@@ -1,18 +1,19 @@
 import dataclasses
 
 import numpy as np
-from numpy.lib.npyio import NpzFile
 from .errors import LoadError
+import pickle
 
 
 @dataclasses.dataclass(repr=False)
 class Data:
     """Сырые данные, полученные со спектрометра"""
-
     clipped: np.array
     """Массив boolean значений. Если `clipped[i]==True`, `amount[i]` содержит зашкаленное значение"""
     amount: np.array
     """Двумерный массив данных измерения. Первый индекс - номер кадра, второй - номер сэмпла в кадре"""
+    exposure: int
+    """Экспозиция (в миллисекундах), с которой были сделаны измерения"""
 
     @property
     def n_times(self) -> int:
@@ -29,32 +30,26 @@ class Data:
         """Форма массива `amount`"""
         return self.amount.shape
 
-    @staticmethod
-    def _serializable_fields():
-        return ['clipped', 'amount']
-
     def save(self, path: str):
         """
         Сохранить объект в файл
         :param path: Путь к файлу
         """
         with open(path, 'wb') as f:
-            np.savez(f, **{field: self.__dict__[field] for field in self._serializable_fields()})
+            pickle.dump(self, f)
 
     @classmethod
-    def load(cls, path: str) -> 'Data':
+    def load(cls, path: str):
         """
         Прочитать объект из файла
         :param path: Путь к файлу
         :return: Загруженный объект
         """
-        with np.load(path) as npz:
-            if not isinstance(npz, NpzFile):
+        with open(path, 'rb') as f:
+            result = pickle.load(f)
+            if not isinstance(result, cls):
                 raise LoadError(path)
-            try:
-                return cls(**{field: npz[field] for field in cls._serializable_fields()})
-            except KeyError:
-                raise LoadError(path)
+            return result
 
     def __repr__(self) -> str:
         return f'{type(self).__name__}({self.n_times = }, {self.n_amount = })'
@@ -69,7 +64,3 @@ class Spectrum(Data):
 
     wavelength: np.array
     """Массив длин волн измерений"""
-
-    @staticmethod
-    def _serializable_fields():
-        return ['clipped', 'amount', 'wavelength']
