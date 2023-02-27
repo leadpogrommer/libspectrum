@@ -1,5 +1,5 @@
 from .errors import LoadError
-from .dataclasses import Data, Spectrum
+from .data import Data, Spectrum
 from .spectrometer import Spectrometer, usb_spectrometer
 
 

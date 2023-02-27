@@ -41,12 +41,12 @@ def graph_demo():
 
     while running:
         read_start = time()
-        if d.fully_configured():
+        if d.is_configured:
             data = d.read()
             wl = data.wavelength
         else:
             data = d.read_raw()
-            wl = np.array(range(0, data.n_amount))
+            wl = np.array(range(0, data.n_amounts))
         read_time = time() - read_start
 
         # print(f'Read data took {read_time}, {read_time/n_times} per frame')
