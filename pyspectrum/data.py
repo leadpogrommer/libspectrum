@@ -1,8 +1,7 @@
 
 import pickle
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 
-import numpy as np
 from numpy.typing import NDArray
 
 from .errors import LoadError
@@ -11,24 +10,24 @@ from .errors import LoadError
 @dataclass(frozen=True)
 class Data:
     """Сырые данные, полученные со спектрометра"""
-    intensity: NDArray[float]  # выходное значение фотоячейки
+    amount: NDArray[float]  # выходное значение фотоячейки
     clipped: NDArray[bool]  # зашкал фотоячейки
     exposure: int  # in ms
 
     @property
     def n_times(self) -> int:
         """Количество измерений"""
-        return self.intensity.shape[0]
+        return self.amount.shape[0]
 
     @property
-    def n_numbers(self) -> int:
+    def n_amounts(self) -> int:
         """Количество отсчетов"""
-        return self.intensity.shape[1]
+        return self.amount.shape[1]
 
     @property
     def shape(self) -> tuple[int, int]:
         """Размерность данынх"""
-        return self.intensity.shape
+        return self.amount.shape
 
     def save(self, path: str):
         """Сохранить объект в файл"""
@@ -49,7 +48,7 @@ class Data:
 
     def __repr__(self) -> str:
         cls = self.__class__
-        return f'{cls.__name__}({self.n_times = }, {self.n_numbers = })'
+        return f'{cls.__name__}({self.n_times = }, {self.n_amounts = })'
 
 
 @dataclass(repr=False)
@@ -60,30 +59,3 @@ class Spectrum(Data):
     """
 
     wavelength: NDArray[float]  # длина волны фотоячейки
-    _number: NDArray[int] | None = field(default=None)
-
-    @property
-    def time(self):
-        return np.arange(self.n_times)
-
-    @property
-    def index(self):
-        '''индекс фотоячейки'''
-        return np.arange(self.n_numbers)
-
-    @property
-    def number(self):
-        '''номер фотоячейки'''
-        if self._number is None:
-            self._number = self.index
-
-        return self._number
-
-    def __getitem__(self, index):
-        raise NotImplementedError
-
-    def __add__(self, other: float | NDArray[float] | 'Spectrum'):
-        raise NotImplementedError
-
-    def __sub__(self, other: float | NDArray[float] | 'Spectrum'):
-        raise NotImplementedError
