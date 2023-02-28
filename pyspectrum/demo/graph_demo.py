@@ -46,7 +46,7 @@ def graph_demo():
             wl = data.wavelength
         else:
             data = d.read_raw()
-            wl = np.array(range(0, data.n_amounts))
+            wl = np.array(range(0, data.n_numbers))
         read_time = time() - read_start
 
         # print(f'Read data took {read_time}, {read_time/n_times} per frame')
@@ -55,6 +55,6 @@ def graph_demo():
 
         ax.clear()
         axs[1].clear()
-        ax.plot(wl, np.mean(data.amount, axis=0))
+        ax.plot(wl, np.mean(data.intensity, axis=0))
         axs[1].plot(wl, np.max(data.clipped, axis=0))
         plt.pause(0.05)

@@ -1,7 +1,8 @@
 
 import pickle
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
+import numpy as np
 from numpy.typing import NDArray
 
 from .errors import LoadError
@@ -10,24 +11,24 @@ from .errors import LoadError
 @dataclass(frozen=True)
 class Data:
     """Сырые данные, полученные со спектрометра"""
-    amount: NDArray[float]  # выходное значение фотоячейки
+    intensity: NDArray[float]  # выходное значение фотоячейки
     clipped: NDArray[bool]  # зашкал фотоячейки
     exposure: int  # in ms
 
     @property
     def n_times(self) -> int:
         """Количество измерений"""
-        return self.amount.shape[0]
+        return self.intensity.shape[0]
 
     @property
-    def n_amounts(self) -> int:
+    def n_numbers(self) -> int:
         """Количество отсчетов"""
-        return self.amount.shape[1]
+        return self.intensity.shape[1]
 
     @property
     def shape(self) -> tuple[int, int]:
         """Размерность данынх"""
-        return self.amount.shape
+        return self.intensity.shape
 
     def save(self, path: str):
         """Сохранить объект в файл"""
@@ -48,7 +49,7 @@ class Data:
 
     def __repr__(self) -> str:
         cls = self.__class__
-        return f'{cls.__name__}({self.n_times = }, {self.n_amounts = })'
+        return f'{cls.__name__}({self.n_times = }, {self.n_numbers = })'
 
 
 @dataclass(repr=False)
@@ -59,3 +60,21 @@ class Spectrum(Data):
     """
 
     wavelength: NDArray[float]  # длина волны фотоячейки
+    _number: NDArray[float] | None = field(default=None)  # номер фотоячейки
+
+    @property
+    def time(self):
+        return np.arange(self.n_times)
+
+    @property
+    def index(self):
+        '''Индекс отсчета'''
+        return np.arange(self.n_numbers)
+
+    @property
+    def number(self):
+        '''Номер отсчета'''
+        if self._number is None:
+            self._number = self.index
+
+        return self._number
