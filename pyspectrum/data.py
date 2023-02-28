@@ -78,3 +78,12 @@ class Spectrum(Data):
             self._number = self.index
 
         return self._number
+
+    def __getitem__(self, index):
+        raise NotImplementedError
+
+    def __add__(self, other: float | NDArray[float] | 'Spectrum'):
+        raise NotImplementedError
+
+    def __sub__(self, other: float | NDArray[float] | 'Spectrum'):
+        raise NotImplementedError
