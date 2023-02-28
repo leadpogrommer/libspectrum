@@ -3,10 +3,10 @@ import sys
 from dataclasses import dataclass
 from typing import Optional
 
-import _pyspectrum as internal
 import numpy as np
 from numpy.typing import NDArray
 
+import _pyspectrum as internal
 from .data import Data, Spectrum
 from .errors import ConfigurationError, LoadError
 
@@ -113,11 +113,11 @@ class Spectrometer:
         n_times = config.n_times if n_times is None else n_times
 
         data = device.readFrame(config.n_times)  # type: internal.RawSpectrum
-        amount = data.samples[:, factory_config.start:factory_config.end][:, ::direction]
+        intensity = data.samples[:, factory_config.start:factory_config.end][:, ::direction]
         clipped = data.clipped[:, factory_config.start:factory_config.end][:, ::direction]
 
         return Data(
-            amount=amount,
+            intensity=intensity,
             clipped=clipped,
             exposure=config.exposure,
         )
@@ -132,7 +132,7 @@ class Spectrometer:
 
         data = self.read_raw()
         return Spectrum(
-            amount=data.amount - np.mean(self.__dark_signal.amount, axis=0),
+            intensity=data.intensity - np.mean(self.__dark_signal.intensity, axis=0),
             clipped=data.clipped,
             wavelength=self.__wavelengths,
             exposure=self.__config.exposure,
