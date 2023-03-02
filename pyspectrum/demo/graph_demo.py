@@ -1,4 +1,5 @@
 def graph_demo():
+    import os
     from pyspectrum import Spectrometer, usb_spectrometer
     import numpy as np
     import matplotlib.pyplot as plt
@@ -7,7 +8,7 @@ def graph_demo():
     from os import path
     from time import time
 
-    d = Spectrometer(usb_spectrometer())
+    d = Spectrometer(usb_spectrometer(), os.path.dirname(os.path.realpath(__file__)) + '/factory_config.json')
 
     matplotlib.use("Qt5agg")
     figure, axs = plt.subplots(ncols=2)
@@ -22,7 +23,7 @@ def graph_demo():
         running = False
 
     def read_dark_signal(_):
-        ret = d.read_dark_signal(10)
+        d.read_dark_signal(10)
 
     figure.canvas.mpl_connect('close_event', on_close)
 
@@ -34,7 +35,7 @@ def graph_demo():
 
     b_profile = Button(ax_profile, 'Load profile data')
     profile_path = path.join(path.dirname(path.realpath(__file__)), 'profile.json')
-    b_profile.on_clicked(lambda e: d.set_config(profile_path=profile_path))
+    b_profile.on_clicked(lambda e: d.set_config(wavelength_calibration_path=profile_path))
 
     n_times = 1
     d.set_config(n_times=n_times, exposure=100)

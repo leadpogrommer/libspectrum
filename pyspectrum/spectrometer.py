@@ -55,6 +55,7 @@ class Spectrometer:
         """
         self.__device = device
         self.__factory_config = FactoryConfig.load(factory_config_path)
+        self.__config = Config()
         self.__device.setTimer(self.__config.exposure)
 
     # --------        dark signal        --------
@@ -117,7 +118,7 @@ class Spectrometer:
         direction = -1 if factory_config.reverse else 1
         n_times = config.n_times if n_times is None else n_times
 
-        data = device.readFrame(config.n_times)  # type: internal.RawSpectrum
+        data = device.readFrame(n_times)  # type: internal.RawSpectrum
         intensity = data.samples[:, factory_config.start:factory_config.end][:, ::direction]
         clipped = data.clipped[:, factory_config.start:factory_config.end][:, ::direction]
 

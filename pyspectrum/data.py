@@ -6,7 +6,7 @@ from numpy.typing import NDArray
 from .errors import LoadError
 
 
-@dataclass(frozen=True)
+@dataclass()
 class Data:
     """Сырые данные, полученные со спектрометра"""
     intensity: NDArray[float]
@@ -53,7 +53,7 @@ class Data:
         return f'{cls.__name__}({self.n_times = }, {self.n_numbers = })'
 
 
-@dataclass(repr=True)
+@dataclass()
 class Spectrum(Data):
     """Обработанные данные, полученные со спектрометра.
     Содержит в себе информацию о длинах волн измерения.
