@@ -104,7 +104,12 @@ class Spectrometer:
 
     # --------        read raw        --------
     def read_raw(self, n_times: Optional[int] = None) -> Data:
-        """Получить сырые данные с устройства"""
+        """
+        Получить сырые данные с устройства
+        Returns:
+            Сырые данные, полученные с устройства
+
+        """
         device = self.__device
         factory_config = self.__factory_config
         config = self.__config
@@ -124,7 +129,12 @@ class Spectrometer:
 
     # --------        read        --------
     def read(self) -> Spectrum:
-        """Получить спектр с устройства."""
+        """
+       Получить обработанный спектр с устройства
+       Returns:
+           Считанный спектр
+
+       """
         if self.__wavelengths is None:
             raise ConfigurationError('Wavelength calibration is not loaded')
         if self.__dark_signal is None:

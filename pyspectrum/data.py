@@ -1,8 +1,6 @@
-
 import pickle
 from dataclasses import dataclass, field
 
-import numpy as np
 from numpy.typing import NDArray
 
 from .errors import LoadError
@@ -11,9 +9,12 @@ from .errors import LoadError
 @dataclass(frozen=True)
 class Data:
     """Сырые данные, полученные со спектрометра"""
-    intensity: NDArray[float]  # выходное значение фотоячейки
-    clipped: NDArray[bool]  # зашкал фотоячейки
-    exposure: int  # in ms
+    intensity: NDArray[float]
+    """Двумерный массив данных измерения. Первый индекс - номер кадра, второй - номер сэмпла в кадре"""
+    clipped: NDArray[bool]
+    """Массив boolean значений. Если `clipped[i,j]==True`, `intensity[i,j]` содержит зашкаленное значение"""
+    exposure: int
+    """Экспозиция в миллисекундах"""
 
     @property
     def n_times(self) -> int:
@@ -52,29 +53,14 @@ class Data:
         return f'{cls.__name__}({self.n_times = }, {self.n_numbers = })'
 
 
-@dataclass(repr=False)
+@dataclass(repr=True)
 class Spectrum(Data):
     """Обработанные данные, полученные со спектрометра.
     Содержит в себе информацию о длинах волн измерения.
     В данный момент обработка заключается в вычитании темнового сигнала.
     """
 
-    wavelength: NDArray[float]  # длина волны фотоячейки
-    _number: NDArray[float] | None = field(default=None)  # номер фотоячейки
+    wavelength: NDArray[float]
+    """длина волны фотоячейки"""
+    number: NDArray[float] | None = field(default=None)  # номер фотоячейки TODO: not implemented
 
-    @property
-    def time(self):
-        return np.arange(self.n_times)
-
-    @property
-    def index(self):
-        '''Индекс отсчета'''
-        return np.arange(self.n_numbers)
-
-    @property
-    def number(self):
-        '''Номер отсчета'''
-        if self._number is None:
-            self._number = self.index
-
-        return self._number
