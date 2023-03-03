@@ -66,7 +66,7 @@ class Spectrometer:
             eprint('Dark signal file is invalid or does not exist, dark signal was NOT loaded')
             return
 
-        if data.shape != self.__dark_signal.shape:
+        if data.shape[1] != (self.__factory_config.end - self.__factory_config.start):
             eprint("Saved dark signal has different shape, dark signal was NOT loaded")
             return
         if data.exposure != self.__config.exposure:
@@ -182,14 +182,14 @@ class Spectrometer:
                 self.__dark_signal = None
                 eprint('Different exposure was set, dark signal invalidated')
 
-        if (n_times is not None):
+        if n_times is not None:
             self.__config.n_times = n_times
 
         if (dark_signal_path is not None) and (dark_signal_path != self.__dark_signal_path):
             self.__dark_signal_path = dark_signal_path
             self.__load_dark_signal()
 
-        if (wavelength_calibration_path is not None):
+        if wavelength_calibration_path is not None:
             self.__load_wavelength_calibration(wavelength_calibration_path)
 
 
