@@ -15,7 +15,7 @@ class Savior(ABC):
 
 class Saver:
     def _save_in_pdf(self):
-        PdfSavior(self._filename, self._data, self._spectrum, self._receiver, self._source_model).save()
+        PdfSavior(self._filename, self._data, self._spectrum, self._source_model).save()
 
     def _save_in_csv(self):
         CsvSavior(self._filename, self._data).save()
@@ -26,15 +26,11 @@ class Saver:
     }
 
     def __init__(self, file_format: str):
-        self._receiver = ""
         self._source_model = ""
         self._file_save_format = file_format
 
     def set_source_model(self, name: str):
         self._source_model = name
-
-    def set_receiver(self, name: str):
-        self._receiver = name
 
     def save(self, filname: str, spectum: Spectrum, data):
         self._data = data
@@ -45,10 +41,9 @@ class Saver:
 
 
 class PdfSavior(FPDF, Savior):
-    def __init__(self, filename: str, data, spectrum: Spectrum, receiver: str = "",
+    def __init__(self, filename: str, data, spectrum: Spectrum,
                  source_model: str = "unnamed"):
         super(PdfSavior, self).__init__()
-        self._receiver = receiver
         self._source_model = source_model
         self._filename = filename
         self._data = data
@@ -65,14 +60,13 @@ class PdfSavior(FPDF, Savior):
         current_date = date.today()
         self.cell(w=50, txt=str(current_date))
         self.set_x(-20)
-        self.cell(w=50, txt=self._receiver, align="LC")
 
     def save(self):
         self.add_page()
         self.set_font("helvetica", "B", 8)
         plt.plot(self._spectrum.wavelength, np.mean(self._spectrum.samples, axis=0))
-        plt.savefig(self._filename + '.png')
-        self.image(name=self._filename + '.png', x=62.5, y=30, w=100, h=75)
+
+        self.image(plt.figure, x=62.5, y=30, w=100, h=75)
         plt.clf()
         self.set_y(120)
         for i in self._data:
@@ -82,7 +76,7 @@ class PdfSavior(FPDF, Savior):
 
 
 class CsvSavior(Savior):
-    def __init__(self, filename: str, data):
+    def __init__(self, filename: str, data, source_name: str =""):
         self._filename = filename
         self._data = data
 
