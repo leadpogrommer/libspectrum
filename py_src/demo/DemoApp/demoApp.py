@@ -16,7 +16,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.spectrum = self.spectrometer_controller.get_spectrum()
         self.spectrumLayout.update_function(self.spectrum)
 
-    def _createMenuBar(self):
+    def _create_menu_bar(self):
         menuBar = self.menuBar()
 
         file = QMenu("&File", self)
@@ -25,17 +25,20 @@ class MainWindow(QtWidgets.QMainWindow):
 
         export = QMenu("&Export", self)
 
-        export_pdf = QAction("PDF", self)
+        export_pdf = QAction("Save in PDF", self)
         export_pdf.triggered.connect(lambda: self.file_save_layout.save("pdf"))
 
-        export_csv = QAction("CSV", self)
+        export_csv = QAction("Save in CSV", self)
         export_csv.triggered.connect(lambda: self.file_save_layout.save("csv"))
 
         export.addAction(export_csv)
         export.addAction(export_pdf)
 
         spectrometer = QMenu("&Spectrometer", self)
-        spectrometer_connect = QAction("Connect", self)
+        spectrometer_connect = QAction("Connect to a spectrometer", self)
+        spectrometer_read_dark_signal=QAction("Read dark signal",self)
+        spectrometer_read_dark_signal.triggered.connect(self.read_dark_signal)
+        spectrometer.addAction(spectrometer_read_dark_signal)
         spectrometer.addAction(spectrometer_connect)
         spectrometer_connect.triggered.connect(self.connect_spectrometer)
 
@@ -59,19 +62,19 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def _init_spectrometer(self):
         self.spectrum = None
-        self.spectrometer_controller = None
         self._starting_inputs()
 
     def __init__(self, *args, **kwargs):
         super(MainWindow, self).__init__(*args, **kwargs)
-        self.setWindowTitle("Pyspectrum")
+        self.spectrometer_controller = SpectrometerController()
+        self.setWindowTitle("Libspectrum")
         self._init_GUI()
-        self._createMenuBar()
+        self._create_menu_bar()
         self.show()
         self._init_spectrometer()
 
     def stop_controller(self):
-        if self.spectrometer_controller is None:
+        if not self.spectrometer_controller.is_ready():
             return
         else:
             self.spectrometer_controller.end()
@@ -82,14 +85,18 @@ class MainWindow(QtWidgets.QMainWindow):
             return True
         return QWidget.event(self, event)
 
+    def read_dark_signal(self):
+        if not self.spectrometer_controller.read_dark_signal():
+            self.error_window(text="No spectrometer connected")
+
     def register_spectrum(self):
-        if self.spectrometer_controller is None:
+        if not self.spectrometer_controller.is_ready():
             return
         if self.spectrometer_controller.is_paused():
             self.spectrometer_controller.pause()
             return
         self.spectrometer_controller.pause()
-        self.file_save_layout.calculateData(self.spectrometer_controller.get_spectrum())
+        self.file_save_layout.calculate_data(self.spectrometer_controller.get_spectrum())
 
     def error_window(self, title: str = "Error", text: str = "unnamed error"):
         mb = QtWidgets.QMessageBox(parent=self)
@@ -99,24 +106,24 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def connect_spectrometer(self):
         try:
-            self.spectrometer_controller = SpectrometerController(
+            self.spectrometer_controller.set_spectrum_source(
                 pyspectrum.Spectrometer(pyspectrum.usb_spectrometer(0x403, 0x6014)))
         except RuntimeError:
             self.error_window(text="Spectrometer not found")
             return False
         # self.stop_controller()
-        self.spectrometer_controller.get_spectrum_update_signal().specter_updated.connect(self.update_func)
+        self.spectrometer_controller.get_spectrum_update_signal().connect(self.update_func)
         self.spectrometer_controller.start()
         return True
 
     def open_file(self):
         self.stop_controller()
         dialog = QtWidgets.QFileDialog()
-        filename = dialog.getOpenFileName()
+        filename = dialog.getOpenFileName(filter="*.pickle")
         if filename[0] != "":
             self.stop_controller()
-            self.spectrometer_controller = SpectrometerController(FileSpectrometer(filename[0]))
-            self.spectrometer_controller.get_spectrum_update_signal().specter_updated.connect(self.update_func)
+            self.spectrometer_controller.set_spectrum_source(FileSpectrometer(filename[0]))
+            self.spectrometer_controller.get_spectrum_update_signal().connect(self.update_func)
             self.spectrometer_controller.start()
             return True
 
@@ -138,4 +145,4 @@ class MainWindow(QtWidgets.QMainWindow):
                 spectrometer = self.connect_spectrometer()
                 if (spectrometer):
                     return
-# Todo: add profile data, add dark spectrum
+

@@ -25,19 +25,19 @@ class Saver:
         "csv": _save_in_csv
     }
 
-    def __init__(self, file_format: str):
+    def __init__(self):
         self._source_model = ""
-        self._file_save_format = file_format
 
     def set_source_model(self, name: str):
         self._source_model = name
 
-    def save(self, filname: str, spectum: Spectrum, data):
+    def save(self, filname: str, spectum: Spectrum, data: dict[str,any],saveformat: str):
+        parsed_filename=filname.split(".")
         self._data = data
         self._spectrum = spectum
-        self._filename = filname
+        self._filename = parsed_filename[0]
         #выполняет метод из словаря можно заменить if'ами
-        self._format_dict[self._file_save_format](self)
+        self._format_dict[saveformat](self)
 
 
 class PdfSavior(FPDF, Savior):
@@ -76,7 +76,7 @@ class PdfSavior(FPDF, Savior):
 
 
 class CsvSavior(Savior):
-    def __init__(self, filename: str, data, source_name: str =""):
+    def __init__(self, filename: str, data):
         self._filename = filename
         self._data = data
 
@@ -86,4 +86,4 @@ class CsvSavior(Savior):
             writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
             writer.writeheader()
             for i in self._data:
-                writer.writerow({'name': i[0], 'value': i[1]})
+                writer.writerow({'name': i, 'value': self._data[i]})

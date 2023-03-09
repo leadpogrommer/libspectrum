@@ -7,7 +7,7 @@ from pyspectrum import Spectrum
 
 class GraphLayout(QBoxLayout):
     def __init__(self, parent: QWidget):
-        super(GraphLayout, self).__init__(QBoxLayout.Direction(2),parent=parent)
+        super(GraphLayout, self).__init__(QBoxLayout.Direction(2))
         self._spectrum = None
         self._mainWindow = parent
         self._spectrum_update_button = QtWidgets.QPushButton()
@@ -15,7 +15,6 @@ class GraphLayout(QBoxLayout):
         self._graph = pg.PlotWidget()
         self._graph.getPlotItem().setMouseEnabled(False, False)
         self.addWidget(self._graph)
-
     def update_function(self, spectrum: Spectrum):
         self._spectrum = spectrum
         self._spectrum_update_button.click()
