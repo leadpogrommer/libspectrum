@@ -1,6 +1,5 @@
 import os
 
-
 import pyspectrum
 from PyQt5.QtCore import QEvent
 
@@ -25,20 +24,21 @@ class MainWindow(QtWidgets.QMainWindow):
         file_load.triggered.connect(self.open_file)
 
         export = QMenu("&Export", self)
-        export_pdf = QMenu("&PDF", self)
 
-        export_pdf_source_model=QAction("Set source model",self)
-        export_pdf_source_model.triggered.connect(self.file_save_layout.set_source_model)
-        export_pdf.addAction(export_pdf_source_model)
-        export_csv = QMenu("&CSV", self)
+        export_pdf = QAction("PDF", self)
+        export_pdf.triggered.connect(lambda: self.file_save_layout.save("pdf"))
+
+        export_csv = QAction("CSV", self)
+        export_csv.triggered.connect(lambda: self.file_save_layout.save("csv"))
+
+        export.addAction(export_csv)
+        export.addAction(export_pdf)
 
         spectrometer = QMenu("&Spectrometer", self)
-        spectrometer_connect = QAction("connect", self)
+        spectrometer_connect = QAction("Connect", self)
         spectrometer.addAction(spectrometer_connect)
         spectrometer_connect.triggered.connect(self.connect_spectrometer)
 
-        export.addMenu(export_csv)
-        export.addMenu(export_pdf)
         file.addAction(file_load)
         menuBar.addMenu(file)
         menuBar.addMenu(spectrometer)
@@ -104,7 +104,7 @@ class MainWindow(QtWidgets.QMainWindow):
         except RuntimeError:
             self.error_window(text="Spectrometer not found")
             return False
-        #self.stop_controller()
+        # self.stop_controller()
         self.spectrometer_controller.get_spectrum_update_signal().specter_updated.connect(self.update_func)
         self.spectrometer_controller.start()
         return True
