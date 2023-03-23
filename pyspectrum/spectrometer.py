@@ -193,12 +193,13 @@ class Spectrometer:
             self.__load_wavelength_calibration(wavelength_calibration_path)
 
 
-def usb_spectrometer(vid: int = 0x0403, pid: int = 0x6014) -> internal.UsbRawSpectrometer:
+def usb_spectrometer(vid: int = 0x0403, pid: int = 0x6014, read_timeout: int = 10_000) -> internal.UsbRawSpectrometer:
     """Create usb spectrometer for Spectrometer creation
     Params:
         vid: Usb vendor id
         pid: Usb product id
+        read_timeout: таймаут чтения данных с устройства, ms
     Return:
         Device object needed for Spectrometer creation
     """
-    return internal.UsbRawSpectrometer(vid, pid)
+    return internal.UsbRawSpectrometer(vid, pid, read_timeout)

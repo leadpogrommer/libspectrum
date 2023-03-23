@@ -37,7 +37,7 @@ struct DeviceDataHeader {
 
 class UsbRawSpectrometer : public RawSpectrometer {
 public:
-    UsbRawSpectrometer(int vendor, int product);
+    UsbRawSpectrometer(int vendor, int product, int64_t readTimeout);
 
     void setTimer(unsigned long millis) override;
 
@@ -46,6 +46,7 @@ public:
     RawSpectrum readFrame(int n_times) override;
 
 private:
+    int64_t readTimeout;
     const int pixel_number = 0x1006;
     uint16_t sequenceNumber = 1;
     UsbContext context;

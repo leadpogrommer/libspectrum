@@ -12,7 +12,7 @@ PYBIND11_MODULE(PYMODULE_NAME, m) {
         .def("setTimer", &RawSpectrometer::setTimer);
 
     py::class_<UsbRawSpectrometer, RawSpectrometer>(m, "UsbRawSpectrometer")
-        .def(pybind11::init<int, int>());
+        .def(pybind11::init<int, int, int>());
 
     py::class_<RawSpectrum>(m, "RawSpectrum")
         .def_property_readonly("samples", &RawSpectrum::pyGetSamples)

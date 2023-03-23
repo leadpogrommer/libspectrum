@@ -1,6 +1,9 @@
 #include "UsbRawSpectrometer.h"
+#include <chrono>
 
-UsbRawSpectrometer::UsbRawSpectrometer(int vendor, int product) {
+UsbRawSpectrometer::UsbRawSpectrometer(int vendor, int product,
+                                       int64_t readTimeout)
+    : readTimeout(readTimeout) {
     context.open(vendor, product);
     context.setBitmode(0x40, 0x40);
     context.setTimeouts(300, 300);
@@ -52,7 +55,8 @@ RawSpectrum UsbRawSpectrometer::readFrame(int n_times) {
 DeviceReply UsbRawSpectrometer::sendCommand(uint8_t code, uint32_t data) {
     DeviceCommand command = {
         {'#', 'C', 'M', 'D'}, code, 4, sequenceNumber++, data};
-    context.write(reinterpret_cast<unsigned char*>(&command), sizeof(DeviceCommand));
+    context.write(reinterpret_cast<unsigned char*>(&command),
+                  sizeof(DeviceCommand));
     DeviceReply reply{};
     readExactly(reinterpret_cast<unsigned char*>(&reply), sizeof(DeviceReply));
     if (memcmp(reply.magic, "#ANS", 4) != 0) {
@@ -77,9 +81,21 @@ void UsbRawSpectrometer::readData(uint8_t* buffer, size_t amount) {
     }
 }
 
+static int64_t getCurrentTime() {
+    return std::chrono::duration_cast<std::chrono::milliseconds>(
+               std::chrono::system_clock::now().time_since_epoch())
+        .count();
+}
+
 void UsbRawSpectrometer::readExactly(uint8_t* buff, int amount) {
     int wasRead = 0;
+    int64_t lastSuccessfulRead = getCurrentTime();
     while (wasRead != amount) {
-        wasRead += context.read(buff + wasRead, amount - wasRead);
+        int chunkSize = context.read(buff + wasRead, amount - wasRead);
+        wasRead += chunkSize;
+        int64_t currentTime = getCurrentTime();
+        if (currentTime - lastSuccessfulRead > readTimeout) {
+            throw std::runtime_error("Device read timeout");
+        }
     }
 }
