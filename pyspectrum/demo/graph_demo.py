@@ -1,6 +1,6 @@
 def graph_demo():
     import os
-    from pyspectrum import Spectrometer, usb_spectrometer
+    from pyspectrum import Spectrometer, usb_spectrometer, FactoryConfig
     import numpy as np
     import matplotlib.pyplot as plt
     import matplotlib
@@ -8,7 +8,7 @@ def graph_demo():
     from os import path
     from time import time
 
-    d = Spectrometer(usb_spectrometer(), os.path.dirname(os.path.realpath(__file__)) + '/factory_config.json')
+    d = Spectrometer(usb_spectrometer(), FactoryConfig.default())
 
     matplotlib.use("Qt5agg")
     figure, axs = plt.subplots(ncols=2)

@@ -1,6 +1,7 @@
 import pickle
 from dataclasses import dataclass, field
 
+import numpy as np
 from numpy.typing import NDArray
 
 from .errors import LoadError
@@ -48,6 +49,57 @@ class Data:
 
         return result
 
+    def check_exposure(self, other: 'Data'):
+        if self.exposure != other.exposure:
+            raise ValueError('Exposures are different')
+
+    def to_spectrum(self, wavelength: NDArray[float]) -> 'Spectrum':
+        return Spectrum(self.intensity, self.clipped, self.exposure, wavelength, None)
+
+    def __add__(self, other):
+        if isinstance(other, Data):
+            # add Data or Spectrum
+            self.check_exposure(other)
+            return Data(
+                self.intensity + other.intensity,
+                np.bitwise_or(self.clipped, other.clipped),
+                self.exposure
+            )
+        else:
+            # add numpy array or scalar
+            return Data(
+                self.intensity + other,
+                self.clipped,
+                self.exposure
+            )
+
+    def __sub__(self, other):
+        if isinstance(other, Data):
+            # sub Data or Spectrum
+            self.check_exposure(other)
+            return Data(
+                self.intensity - other.intensity,
+                np.bitwise_or(self.clipped, other.clipped),
+                self.exposure
+            )
+        else:
+            # sub numpy array or scalar
+            return Data(
+                self.intensity - other,
+                self.clipped,
+                self.exposure
+            )
+
+    def __mul__(self, other):
+        # multiplying by data is not supported
+        if isinstance(other, Data):
+            raise TypeError('Cannot multiply by Data')
+        return Data(
+            self.intensity * other,
+            self.clipped,
+            self.exposure
+        )
+
     def __repr__(self) -> str:
         cls = self.__class__
         return f'{cls.__name__}({self.n_times = }, {self.n_numbers = })'
@@ -64,3 +116,12 @@ class Spectrum(Data):
     """длина волны фотоячейки"""
     number: NDArray[float] | None = field(default=None)  # номер фотоячейки TODO: not implemented
 
+    # TODO: slice support
+    def __add__(self, other):
+        return super().__add__(other).to_spectrum(self.wavelength)
+
+    def __sub__(self, other):
+        return super().__sub__(other).to_spectrum(self.wavelength)
+
+    def __mul__(self, other):
+        return super().__mul__(other).to_spectrum(self.wavelength)

@@ -1,4 +1,4 @@
-from pyspectrum import Spectrometer
+from pyspectrum import Spectrometer, FactoryConfig
 
 
 def exposures_test():
@@ -6,7 +6,7 @@ def exposures_test():
     from time import time
 
     exposures = [1, 2, 3, 4, 5, 10, 20, 50, 100, 200, 250, 500]
-    d = Spectrometer(usb_spectrometer())
+    d = Spectrometer(usb_spectrometer(), FactoryConfig.default())
 
     for exposure in exposures:
         n = int(min(500, 20 / (exposure / 1000)))

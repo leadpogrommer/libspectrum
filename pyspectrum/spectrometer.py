@@ -20,48 +20,60 @@ class FactoryConfig:
     start: int
     end: int
     reverse: bool
+    intensity_scale: float
 
     @staticmethod
     def load(path: str) -> 'FactoryConfig':
         try:
             with open(path, 'r') as f:
                 json_data = json.load(f)
-            return FactoryConfig(int(json_data['start']), int(json_data['end']), bool(json_data['reverse']))
+            return FactoryConfig(**json_data)
 
         except KeyError:
             raise LoadError(path)
+
+    @staticmethod
+    def default():
+        return FactoryConfig(
+            2050,
+            3850,
+            True,
+            1.220703125,
+        )
 
 
 @dataclass(frozen=False)
 class Config:
     exposure: int = 10  # время экспозиции, ms
     n_times: int = 1  # количество измерений
+    dark_signal_path: Optional[str] = None
 
 
 class Spectrometer:
     """Класс, представляющий высокоуровневую абстракцию над спектрометром"""
-    __device: internal.RawSpectrometer
-    __dark_signal_path: str | None = None
-    __dark_signal: Data | None = None
-    __wavelengths: NDArray[float] | None = None
-    __factory_config: FactoryConfig
-    __config: Config
 
-    def __init__(self, device: internal.RawSpectrometer, factory_config_path: str = 'factory_config.json'):
+    def __init__(self, device: internal.RawSpectrometer, factory_config: FactoryConfig):
         """
         Params:
             device: Низкоуровневый объект устройства. В данный момент может быть получен только через `usb_spectrometer`
-            factory_config_path: Путь к файлу заводских настроек
+            factory_config: Заводские настройки
         """
-        self.__device = device
-        self.__factory_config = FactoryConfig.load(factory_config_path)
+        self.__device: internal.RawSpectrometer = device
+        self.__factory_config = factory_config
         self.__config = Config()
         self.__device.setTimer(self.__config.exposure)
+        self.__dark_signal: Data | None = None
+        self.__wavelengths: NDArray[float] | None = None
 
     # --------        dark signal        --------
+
+    @property
+    def dark_signal(self) -> Data:
+        return self.__dark_signal
+
     def __load_dark_signal(self):
         try:
-            data = Data.load(self.__dark_signal_path)
+            data = Data.load(self.__config.dark_signal_path)
         except Exception:
             eprint('Dark signal file is invalid or does not exist, dark signal was NOT loaded')
             return
@@ -82,12 +94,12 @@ class Spectrometer:
 
     def save_dark_signal(self):
         """Сохранить темновой сигнал"""
-        if self.__dark_signal_path is None:
+        if self.__config.dark_signal_path is None:
             raise ConfigurationError('Dark signal path is not set')
         if self.__dark_signal is None:
             raise ConfigurationError('Dark signal is not loaded')
 
-        self.__dark_signal.save(self.__dark_signal_path)
+        self.__dark_signal.save(self.__config.dark_signal_path)
 
     # --------        wavelength calibration        --------
     def __load_wavelength_calibration(self, path: str) -> None:
@@ -119,7 +131,8 @@ class Spectrometer:
         n_times = config.n_times if n_times is None else n_times
 
         data = device.readFrame(n_times)  # type: internal.RawSpectrum
-        intensity = data.samples[:, factory_config.start:factory_config.end][:, ::direction]
+        intensity = data.samples[:, factory_config.start:factory_config.end][:,
+                    ::direction] * self.__factory_config.intensity_scale
         clipped = data.clipped[:, factory_config.start:factory_config.end][:, ::direction]
 
         return Data(
@@ -129,21 +142,23 @@ class Spectrometer:
         )
 
     # --------        read        --------
-    def read(self) -> Spectrum:
+    def read(self, force: bool = False) -> Spectrum:
         """
        Получить обработанный спектр с устройства
        Returns:
            Считанный спектр
 
        """
-        if self.__wavelengths is None:
+        if self.__wavelengths is None and not force:
             raise ConfigurationError('Wavelength calibration is not loaded')
         if self.__dark_signal is None:
             raise ConfigurationError('Dark signal is not loaded')
 
         data = self.read_raw()
+        scale = self.__factory_config.intensity_scale
         return Spectrum(
-            intensity=data.intensity - np.mean(self.__dark_signal.intensity, axis=0),
+            intensity=(data.intensity / scale - np.round(
+                np.mean(self.__dark_signal.intensity / scale, axis=0))) * scale,
             clipped=data.clipped,
             wavelength=self.__wavelengths,
             exposure=self.__config.exposure,
@@ -185,8 +200,8 @@ class Spectrometer:
         if n_times is not None:
             self.__config.n_times = n_times
 
-        if (dark_signal_path is not None) and (dark_signal_path != self.__dark_signal_path):
-            self.__dark_signal_path = dark_signal_path
+        if (dark_signal_path is not None) and (dark_signal_path != self.__config.dark_signal_path):
+            self.__config.dark_signal_path = dark_signal_path
             self.__load_dark_signal()
 
         if wavelength_calibration_path is not None:
