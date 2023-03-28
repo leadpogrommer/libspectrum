@@ -36,8 +36,11 @@ class MainWindow(QtWidgets.QMainWindow):
 
         spectrometer = QMenu("&Spectrometer", self)
         spectrometer_connect = QAction("Connect to a spectrometer", self)
-        spectrometer_read_dark_signal=QAction("Read dark signal",self)
+        spectrometer_set_n_times = QAction("Set measurement cnt", self)
+        spectrometer_read_dark_signal = QAction("Read dark signal", self)
         spectrometer_read_dark_signal.triggered.connect(self.read_dark_signal)
+        spectrometer_set_n_times.triggered.connect(self.set_measurement_cnt)
+        spectrometer.addAction(spectrometer_set_n_times)
         spectrometer.addAction(spectrometer_read_dark_signal)
         spectrometer.addAction(spectrometer_connect)
         spectrometer_connect.triggered.connect(self.connect_spectrometer)
@@ -89,6 +92,12 @@ class MainWindow(QtWidgets.QMainWindow):
         if not self.spectrometer_controller.read_dark_signal():
             self.error_window(text="No spectrometer connected")
 
+    def set_measurement_cnt(self):
+        input = QtWidgets.QInputDialog()
+        cnt, ok = input.getInt(self, "Enter a number", "number", 1, 1)
+        if ok:
+            self.spectrometer_controller.set_measurement_cnt(cnt)
+
     def register_spectrum(self):
         if not self.spectrometer_controller.is_ready():
             return
@@ -138,11 +147,10 @@ class MainWindow(QtWidgets.QMainWindow):
             if choice == "File":
                 lastPicked = 1
                 file = self.open_file()
-                if (file):
+                if file:
                     return
             if choice == "Spectrometer" and ok:
                 lastPicked = 0
                 spectrometer = self.connect_spectrometer()
-                if (spectrometer):
+                if spectrometer:
                     return
-

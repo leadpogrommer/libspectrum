@@ -2,7 +2,6 @@ import time
 from threading import Thread
 
 from PyQt5.QtCore import QEvent, QObject, pyqtSignal
-from PyQt5.QtWidgets import QWidget
 from pyspectrum import Spectrum
 from pyspectrum import Spectrometer
 
@@ -22,20 +21,20 @@ class SpectrometerController(Thread):
         self._n_times = 1
         super().__init__()
 
-    def set_spectrum_source(self,spectrum_source):
+    def set_spectrum_source(self, spectrum_source):
         """
 
         :param spectrum_source: setting a source for getting spectrum, spectrometer or file spectrometer
         (for reading files)
         :return:
         """
-        self._spectrometer=spectrum_source
+        self._spectrometer = spectrum_source
 
     def is_ready(self):
         return not (self._spectrometer is None)
 
-    def set_measurement_cnt(self, n_times:int):
-        self._n_times=n_times
+    def set_measurement_cnt(self, n_times: int):
+        self._n_times = n_times
 
     def end(self) -> None:
         self._running = False

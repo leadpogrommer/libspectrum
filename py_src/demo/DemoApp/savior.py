@@ -31,12 +31,12 @@ class Saver:
     def set_source_model(self, name: str):
         self._source_model = name
 
-    def save(self, filname: str, spectum: Spectrum, data: dict[str,any],saveformat: str):
-        parsed_filename=filname.split(".")
+    def save(self, filname: str, spectum: Spectrum, data: dict[str, any], saveformat: str):
+        parsed_filename = filname.split(".")
         self._data = data
         self._spectrum = spectum
         self._filename = parsed_filename[0]
-        #выполняет метод из словаря можно заменить if'ами
+        # выполняет метод из словаря можно заменить if'ами
         self._format_dict[saveformat](self)
 
 
