@@ -98,3 +98,11 @@ void UsbRawSpectrometer::readExactly(uint8_t* buff, int amount) {
         }
     }
 }
+
+void UsbRawSpectrometer::close() {
+    context.close();
+    opened = false;
+}
+bool UsbRawSpectrometer::isOpened() {
+    return opened;
+}

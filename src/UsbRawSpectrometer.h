@@ -45,11 +45,16 @@ public:
 
     RawSpectrum readFrame(int n_times) override;
 
+    void close() override;
+
+    bool isOpened() override;
+
 private:
     int64_t readTimeout;
     const int pixel_number = 0x1006;
     uint16_t sequenceNumber = 1;
     UsbContext context;
+    bool opened = true;
 
     void readExactly(uint8_t* buff, int amount);
     DeviceReply sendCommand(uint8_t code, uint32_t data);

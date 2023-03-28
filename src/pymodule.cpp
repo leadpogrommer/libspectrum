@@ -9,7 +9,9 @@ PYBIND11_MODULE(PYMODULE_NAME, m) {
     py::class_<RawSpectrometer>(m, "RawSpectrometer")
         .def("readFrame", &RawSpectrometer::readFrame)
         .def("getPixelCount", &RawSpectrometer::getPixelCount)
-        .def("setTimer", &RawSpectrometer::setTimer);
+        .def("setTimer", &RawSpectrometer::setTimer)
+        .def("close", &RawSpectrometer::close)
+        .def_property_readonly("isOpened", &RawSpectrometer::isOpened);
 
     py::class_<UsbRawSpectrometer, RawSpectrometer>(m, "UsbRawSpectrometer")
         .def(pybind11::init<int, int, std::string, int>());

@@ -8,7 +8,7 @@ import numpy as np
 from numpy.typing import NDArray
 
 from .data import Data, Spectrum
-from .errors import ConfigurationError, LoadError
+from .errors import ConfigurationError, LoadError, DeviceClosedError
 
 
 def eprint(*args, **kwargs):
@@ -64,6 +64,13 @@ class Spectrometer:
         self.__device.setTimer(self.__config.exposure)
         self.__dark_signal: Data | None = None
         self.__wavelengths: NDArray[float] | None = None
+
+    def __check_opened(self):
+        if not self.__device.isOpened:
+            raise DeviceClosedError()
+
+    def close(self):
+        self.__device.close()
 
     # --------        dark signal        --------
 
@@ -123,6 +130,8 @@ class Spectrometer:
             Сырые данные, полученные с устройства
 
         """
+        self.__check_opened()
+
         device = self.__device
         factory_config = self.__factory_config
         config = self.__config
@@ -190,6 +199,7 @@ class Spectrometer:
             wavelength_calibration_path: Путь к файлу данных калибровки по длине волны
         """
         if (exposure is not None) and (exposure != self.__config.exposure):
+            self.__check_opened()
             self.__config.exposure = exposure
             self.__device.setTimer(self.__config.exposure)
 
@@ -208,7 +218,10 @@ class Spectrometer:
             self.__load_wavelength_calibration(wavelength_calibration_path)
 
 
-def usb_spectrometer(vid: int = 0x0403, pid: int = 0x6014, read_timeout: int = 10_000, serial: str = '') -> internal.UsbRawSpectrometer:
+__usb_device_cache: dict[tuple, internal.UsbRawSpectrometer] = dict()
+
+
+def usb_spectrometer(vid: int = 0x0403, pid: int = 0x6014, read_timeout: int = 10_000, serial: str = '', reopen: bool = False) -> internal.UsbRawSpectrometer:
     """Create usb spectrometer for Spectrometer creation
     Params:
         vid: Usb vendor id
@@ -217,4 +230,9 @@ def usb_spectrometer(vid: int = 0x0403, pid: int = 0x6014, read_timeout: int = 1
     Return:
         Device object needed for Spectrometer creation
     """
-    return internal.UsbRawSpectrometer(vid, pid, serial, read_timeout)
+    device_id = (vid, pid, serial)
+    if reopen and (device_id in __usb_device_cache):
+        __usb_device_cache[device_id].close()
+    device = internal.UsbRawSpectrometer(vid, pid, serial, read_timeout)
+    __usb_device_cache[device_id] = device
+    return device

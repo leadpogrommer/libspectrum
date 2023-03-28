@@ -4,7 +4,7 @@ import numpy as np
 from numpy.typing import NDArray
 import json
 import pytest
-from pyspectrum import Spectrometer, Data, FactoryConfig
+from pyspectrum import Spectrometer, Data, FactoryConfig, DeviceClosedError
 
 
 @dataclass()
@@ -15,6 +15,8 @@ class MockInternalRawSpectrum:
 
 class MockInternalSpectrometer:
     resolution = 4096
+    def __init__(self):
+        self.__opened = True
 
     def setTimer(self, _):
         pass
@@ -23,6 +25,13 @@ class MockInternalSpectrometer:
         samples = np.array([np.arange(0, self.resolution, 1) + i for i in range(n_times)])
         clipped = np.zeros((n_times, self.resolution))
         return MockInternalRawSpectrum(clipped, samples)
+
+    @property
+    def isOpened(self) -> bool:
+        return self.__opened
+
+    def close(self):
+        self.__opened = False
 
 
 def create_factory_config(path: str, start: int, end: int, reverse: bool, intensity_scale: float = 1.0):
@@ -152,3 +161,10 @@ def test_arithmetics():
 
     multiplies = d1 * 2
     assert np.array_equal(np.array([2, 4, 1998]), multiplies.intensity)
+
+
+def test_device_close(device: Spectrometer):
+    device.read_raw() # should not fail
+    device.close()
+    with pytest.raises(DeviceClosedError):
+        device.read_raw()
