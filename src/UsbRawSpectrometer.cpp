@@ -1,10 +1,9 @@
 #include "UsbRawSpectrometer.h"
 #include <chrono>
 
-UsbRawSpectrometer::UsbRawSpectrometer(int vendor, int product,
-                                       int64_t readTimeout)
+UsbRawSpectrometer::UsbRawSpectrometer(int vendor, int product, std::string serial, int64_t readTimeout)
     : readTimeout(readTimeout) {
-    context.open(vendor, product);
+    context.open(vendor, product, serial);
     context.setBitmode(0x40, 0x40);
     context.setTimeouts(300, 300);
     sendCommand(COMMAND_WRITE_CR, 0);

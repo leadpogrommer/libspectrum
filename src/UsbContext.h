@@ -7,7 +7,7 @@ class UsbContext {
 public:
     UsbContext();
     ~UsbContext();
-    void open(int vendor, int product);
+    void open(int vendor, int product, const std::string& serial);
     void close();
     void setBitmode(unsigned char mask, unsigned char enable);
     void setTimeouts(int readTimeoutMillis, int writeTimeoutMillis);

@@ -1,4 +1,5 @@
 #include <stdexcept>
+#include <string>
 
 #include <wtypes.h>
 #include <ftd2xx.h>
@@ -12,7 +13,8 @@ struct UsbContext::Private {
 UsbContext::UsbContext() : p(new Private) {}
 UsbContext::~UsbContext() {}
 
-void UsbContext::open(int vendor, int product) {
+// TODO: open by serial
+void UsbContext::open(int vendor, int product, const std::string& serial) {
     DWORD numDevs;
     if (FT_CreateDeviceInfoList(&numDevs) != FT_OK) {
         throw std::runtime_error("Failed to create device info list");

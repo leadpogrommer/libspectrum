@@ -37,7 +37,7 @@ struct DeviceDataHeader {
 
 class UsbRawSpectrometer : public RawSpectrometer {
 public:
-    UsbRawSpectrometer(int vendor, int product, int64_t readTimeout);
+    UsbRawSpectrometer(int vendor, int product, std::string serial, int64_t readTimeout);
 
     void setTimer(unsigned long millis) override;
 
