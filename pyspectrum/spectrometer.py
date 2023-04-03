@@ -52,7 +52,7 @@ class Config:
 class Spectrometer:
     """Класс, представляющий высокоуровневую абстракцию над спектрометром"""
 
-    def __init__(self, device: internal.RawSpectrometer, factory_config: FactoryConfig):
+    def __init__(self, device: internal.RawSpectrometer, factory_config: FactoryConfig = FactoryConfig.default()):
         """
         Params:
             device: Низкоуровневый объект устройства. В данный момент может быть получен только через `usb_spectrometer`
