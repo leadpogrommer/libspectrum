@@ -4,6 +4,7 @@ from math import log
 import numpy as np
 from IPython.display import display
 import matplotlib.pyplot as plt
+import scipy.stats
 
 from pyspectrum import Spectrum
 
@@ -16,6 +17,7 @@ class Pyrometer:
         self.calibration = calibration_spectrum
         # run results
         self.temperatures = None
+        self.deltas = None
         self.input_data = None
         self.xmin = None
         self.xmax = None
@@ -57,7 +59,22 @@ class Pyrometer:
         self.line_c = c
         self.line_m = m
         
-        return -1/m
+        temperature = -1/m
+
+        # error calculation
+        xs = cropped.T[0]
+        ys = cropped.T[1]
+
+        ei2 = (ys - (xs*m + c))**2
+        s2 = (1/(len(intensity)-2))*ei2.sum()
+        Db = s2/( (xs - xs.mean())**2 ).sum()
+        # display(Db)
+
+        deltaM = scipy.stats.t.interval(0.95, df=len(intensity)-2)[1]*(Db**0.5)
+
+        deltaT = deltaM/(m**2)
+
+        return np.array([temperature, deltaT])
     
     def run(self, spectrum: Spectrum, wl_min: float, wl_max: float) -> NDArray:
         self.input_data = spectrum
@@ -65,7 +82,7 @@ class Pyrometer:
         xmin = c2/wl_max
         self.xmax = xmax
         self.xmin = xmin
-        self.temperatures = np.apply_along_axis(lambda a: self._get_temp(spectrum.wavelength, a, xmin, xmax), 1, spectrum.intensity)
+        self.temperatures, self.deltas = np.apply_along_axis(lambda a: self._get_temp(spectrum.wavelength, a, xmin, xmax), 1, spectrum.intensity).T
 
         # fill result fields with data from last measurement
         self._get_temp(spectrum.wavelength, spectrum.intensity[-1], xmin, xmax)
@@ -74,6 +91,7 @@ class Pyrometer:
         fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2, 2, figsize=(8*2, 6*2))
         xmin, xmax = self.xmin, self.xmax
 
+        ax1.fill_between(np.arange(len(self.temperatures)), self.temperatures - self.deltas, self.temperatures + self.deltas, color='red')
         ax1.plot(self.temperatures)
         ax1.set_ylabel('temperature')
         ax1.set_xlabel('measurement')
@@ -107,6 +125,6 @@ class Pyrometer:
             fig.savefig(filename)
 
     def get_temperature(self):
-        return self.temperatures
+        return np.array([self.temperatures, self.deltas]).T
 
 
