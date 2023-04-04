@@ -17,6 +17,9 @@ def eprint(*args, **kwargs):
 
 @dataclass(frozen=True)
 class FactoryConfig:
+    """
+    Настройки, индивидуадьные для каждого устройства
+    """
     start: int
     end: int
     reverse: bool
@@ -24,6 +27,12 @@ class FactoryConfig:
 
     @staticmethod
     def load(path: str) -> 'FactoryConfig':
+        """
+        Args:
+            path: Путь к файлу заводских настроек
+        Returns:
+            Объект заводских настроек
+        """
         try:
             with open(path, 'r') as f:
                 json_data = json.load(f)
@@ -33,7 +42,12 @@ class FactoryConfig:
             raise LoadError(path)
 
     @staticmethod
-    def default():
+    def default() -> 'FactoryConfig':
+        """
+        Создаёт заводские настройки для тестрирования
+        Returns:
+            Объект заводских настроек
+        """
         return FactoryConfig(
             2050,
             3850,
@@ -69,13 +83,15 @@ class Spectrometer:
         if not self.__device.isOpened:
             raise DeviceClosedError()
 
-    def close(self):
+    def close(self) -> None:
+        """Закрыть устройство"""
         self.__device.close()
 
     # --------        dark signal        --------
 
     @property
-    def dark_signal(self) -> Data:
+    def dark_signal(self) -> Data|None:
+        """Текущий темновой сигнал"""
         return self.__dark_signal
 
     def __load_dark_signal(self):
@@ -96,7 +112,11 @@ class Spectrometer:
         eprint('Dark signal loaded')
 
     def read_dark_signal(self, n_times: Optional[int] = None) -> None:
-        """Считать темновой сигнал"""
+        """
+        Считать темновой сигнал
+        Args:
+            n_times: Количество измерений. При обработке данных будет использовано среднее значение
+        """
         self.__dark_signal = self.read_raw(n_times)
 
     def save_dark_signal(self):
@@ -154,6 +174,8 @@ class Spectrometer:
     def read(self, force: bool = False) -> Spectrum:
         """
        Получить обработанный спектр с устройства
+       Args:
+           force: Если ``True``, позволяет считать сигнал без калибровки по длина волн
        Returns:
            Считанный спектр
 
@@ -227,7 +249,9 @@ def usb_spectrometer(vid: int = 0x0403, pid: int = 0x6014, read_timeout: int = 1
         vid: Usb vendor id
         pid: Usb product id
         read_timeout: таймаут чтения данных с устройства, ms
-    Return:
+        serial: Usb serial (по умполчанию открывается первое устройство с подходящими `vid` и `pid`)
+        reopen: Если `True`, предыдущий объект Spectrometer, использующий устройство, буде закрыт
+    Returns:
         Device object needed for Spectrometer creation
     """
     device_id = (vid, pid, serial)

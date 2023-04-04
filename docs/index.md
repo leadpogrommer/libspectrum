@@ -6,4 +6,6 @@ hide:
 [Установка библиотеки](installation)  
 [Документация API](reference)
 
-TODO: (здесь будет пример использования)
+## Примеры
+[Чтение спектра и сохранение данных в файл](examples/record_spectrum)  
+[Пирометр](examples/pyrometer)  

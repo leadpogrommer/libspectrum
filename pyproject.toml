@@ -7,7 +7,8 @@ requires = [
     "mkdocs",
     "mkdocs-material",
     "mkdocstrings",
-    "mkdocstrings[python]"
+    "mkdocstrings[python]",
+    "mkdocs-jupyter",
 ]
 build-backend = "setuptools.build_meta"
 

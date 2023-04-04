@@ -7,6 +7,9 @@ hide:
 ## Spectrometer
 ::: pyspectrum.Spectrometer
 
+## FactoryConfig
+::: pyspectrum.FactoryConfig
+
 ## Data
 ::: pyspectrum.Data
 

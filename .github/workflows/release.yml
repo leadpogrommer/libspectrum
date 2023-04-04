@@ -79,7 +79,7 @@ jobs:
         with:
           python-version: '3.10'
 #      TODO: install requirements from [build-system]
-      - run: 'pip install mkdocs mkdocs-material mkdocstrings mkdocstrings-python'
+      - run: 'pip install mkdocs mkdocs-material mkdocstrings mkdocstrings-python mkdocs-jupyter'
       - run: 'mkdocs build'
       - name: Deploy to GitHub Pages
         uses: JamesIves/github-pages-deploy-action@v4.4.1

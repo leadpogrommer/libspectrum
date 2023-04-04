@@ -23,10 +23,7 @@ hide:
    echo 'SUBSYSTEMS=="usb", ATTRS{idVendor}=="0403", ATTRS{idProduct}=="6014",  MODE="0666"' | sudo tee /etc/udev/rules.d/69-spectrometer.rules
    sudo udevadm control --reload
    ```
-1. Проверить работоспособность  
-   ```
-   python3 -m pyspectrum.demo graph
-   ```
+
 ## Windows
 1. Установить [драйвер FTDI](https://ftdichip.com/wp-content/uploads/2021/08/CDM212364_Setup.zip) (Если на компьютере ранее работал `Atom`, шаг можно пропустить)
 3. Установить [Распространяемый пакет Visual C++ для Visual Studio 2015](https://www.microsoft.com/ru-RU/download/details.aspx?id=48145)
@@ -37,7 +34,4 @@ hide:
     ```  
    Ссылку на последнюю версию можно взять [здесь](https://github.com/leadpogrommer/libspectrum/releases). Необходимо использовать версию,
    соответствующую версии Python (cp310 - Python 3.10, cp311 - Python 3.11 etc).
-1. Проверить работоспособность  
-   ```
-   python -m pyspectrum.demo graph
-   ```
+
