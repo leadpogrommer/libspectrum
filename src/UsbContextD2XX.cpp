@@ -13,7 +13,6 @@ struct UsbContext::Private {
 UsbContext::UsbContext() : p(new Private) {}
 UsbContext::~UsbContext() {}
 
-// TODO: open by serial
 void UsbContext::open(int vendor, int product, const std::string& serial) {
     DWORD numDevs;
     if (FT_CreateDeviceInfoList(&numDevs) != FT_OK) {
@@ -21,8 +20,12 @@ void UsbContext::open(int vendor, int product, const std::string& serial) {
     }
 
     DWORD id;
+    char deviceSerial[64];
     for (DWORD index = 0; index < numDevs; ++index) {
-        FT_GetDeviceInfoDetail(index, NULL, NULL, &id, NULL, NULL, NULL, NULL);
+        FT_GetDeviceInfoDetail(index, NULL, NULL, &id, NULL, deviceSerial, NULL, NULL);
+        if (!serial.empty() && serial != deviceSerial) {
+            continue;
+        }
         if (((id >> 16) & 0xFFFF) == vendor && (id & 0xFFFF) == product) {
             if (FT_Open(index, &p->handle) != FT_OK) {
                 throw std::runtime_error("Failed to open device");
