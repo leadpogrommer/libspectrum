@@ -100,9 +100,11 @@ jobs:
         title: 'Latest Build'
         files: |
           ${{github.workspace}}/*/*.whl
+    - name: Copy whl files
+      run: 'mkdir dist; cp $GITHUB_WORKSPACE/*/*.whl dist/'
     - name: Publish distribution to PyPI
 #      if: startsWith(github.ref, 'refs/tags')
       uses: pypa/gh-action-pypi-publish@release/v1
       with:
         password: ${{ secrets.PYPI_API_TOKEN }}
-        packages-dir: ${{github.workspace}}/
+#        packages-dir: ${{github.workspace}}/
