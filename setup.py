@@ -120,8 +120,8 @@ class CMakeBuild(build_ext):
 # The information here can also be placed in setup.cfg - better separation of
 # logic and declaration, and simpler if you include description/version in a file.
 setup(
-    name="pyspectrum",
-    version="0.0.4",
+    name="vmk-spectrum",
+    version="0.0.5",
     author="leadpogrommer",
     long_description="",
     package_data={'pyspectrum.demo': ['*']},
@@ -132,5 +132,5 @@ setup(
     zip_safe=False,
     extras_require={"test": ["pytest>=6.0"]},
     python_requires=">=3.10",
-    install_requires=['numpy', 'matplotlib', 'PyQt5'],
+    install_requires=['numpy', 'matplotlib'],
 )
