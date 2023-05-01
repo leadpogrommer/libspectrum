@@ -1,0 +1,35 @@
+site_name: Pyspectrum documentation
+theme:
+  name: material
+  features:
+    - navigation.instant
+    - navigation.tabs
+site_dir: docs_generated
+watch:
+  - pyspectrum
+  - examples
+plugins:
+  - search
+  - autorefs
+  - mkdocs-jupyter:
+      include: ["*.ipynb"]
+      include_source: True
+  - mkdocstrings:
+      default_handler: python
+      handlers:
+        python:
+          options:
+            show_source: false
+            paths: [.]
+#            docstring_style: sphinx
+            show_root_toc_entry: false
+            members_order: "source"
+            group_by_category: false
+            heading_level: 3
+nav:
+  - 'index.md'
+  - 'installation.md'
+  - 'reference.md'
+  - 'Примеры':
+      - 'Запись спектра': 'examples/record_spectrum.ipynb'
+      - 'Пирометр': 'examples/pyrometer.ipynb'

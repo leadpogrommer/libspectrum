@@ -1,8 +1,7 @@
 #pragma once
 
 #include "RawSpectrometer.h"
-#include <ftdi.hpp>
-
+#include "UsbContext.h"
 
 #define COMMAND_WRITE_CR 0x01
 #define COMMAND_WRITE_TIMER 0x02
@@ -38,7 +37,7 @@ struct DeviceDataHeader {
 
 class UsbRawSpectrometer : public RawSpectrometer {
 public:
-    UsbRawSpectrometer(int vendor, int product);
+    UsbRawSpectrometer(int vendor, int product, std::string serial, int64_t readTimeout);
 
     void setTimer(unsigned long millis) override;
 
@@ -46,10 +45,16 @@ public:
 
     RawSpectrum readFrame(int n_times) override;
 
+    void close() override;
+
+    bool isOpened() override;
+
 private:
+    int64_t readTimeout;
     const int pixel_number = 0x1006;
     uint16_t sequenceNumber = 1;
-    Ftdi::Context context;
+    UsbContext context;
+    bool opened = true;
 
     void readExactly(uint8_t* buff, int amount);
     DeviceReply sendCommand(uint8_t code, uint32_t data);

@@ -299,3 +299,5 @@ cython_debug/
 py_src/.idea
 **/.idea
 dark_signal.dat
+docs_generated/
+.vscode

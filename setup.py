@@ -75,9 +75,6 @@ class CMakeBuild(build_ext):
                     pass
 
         else:
-            cmake_toolchain_file = os.path.join(ext.sourcedir, 'vcpkg', 'scripts', 'buildsystems', 'vcpkg.cmake')
-            cmake_args += ['--toolchain', cmake_toolchain_file]
-
             # Single config generators are handled "normally"
             single_config = any(x in cmake_generator for x in {"NMake", "Ninja"})
 
@@ -123,17 +120,18 @@ class CMakeBuild(build_ext):
 # The information here can also be placed in setup.cfg - better separation of
 # logic and declaration, and simpler if you include description/version in a file.
 setup(
-    name="pyspectrum",
-    version="0.0.2",
+    name="vmk-spectrum",
+    version="0.0.5",
     author="leadpogrommer",
-    long_description="",
+    long_description="Library for communication with VMK spectrometers",
+    long_description_content_type="text/plain",
     package_data={'pyspectrum.demo': ['*']},
     ext_modules=[CMakeExtension("cmake_example")],
-    package_dir={'pyspectrum': 'py_src'},
-    packages=['pyspectrum', 'pyspectrum.demo'],
+    package_dir={'pyspectrum': 'pyspectrum'},
+    packages=['pyspectrum'],
     cmdclass={"build_ext": CMakeBuild},
     zip_safe=False,
     extras_require={"test": ["pytest>=6.0"]},
     python_requires=">=3.10",
-    requires=['numpy', 'matplotlib'],
+    install_requires=['numpy', 'matplotlib'],
 )

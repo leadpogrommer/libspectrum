@@ -1,12 +1,11 @@
 #include "UsbRawSpectrometer.h"
+#include <chrono>
 
-UsbRawSpectrometer::UsbRawSpectrometer(int vendor, int product) {
-    if (context.open(vendor, product) < 0) {
-        throw std::runtime_error("Device not found");
-    }
-    context.set_bitmode(BITMODE_SYNCFF, BITMODE_SYNCFF);
-    context.set_usb_read_timeout(300);
-    context.set_usb_write_timeout(300);
+UsbRawSpectrometer::UsbRawSpectrometer(int vendor, int product, std::string serial, int64_t readTimeout)
+    : readTimeout(readTimeout) {
+    context.open(vendor, product, serial);
+    context.setBitmode(0x40, 0x40);
+    context.setTimeouts(300, 300);
     sendCommand(COMMAND_WRITE_CR, 0);
     sendCommand(COMMAND_WRITE_TIMER, 0x03e8);
     sendCommand(COMMAND_WRITE_PIXEL_NUMBER, pixel_number);
@@ -55,10 +54,8 @@ RawSpectrum UsbRawSpectrometer::readFrame(int n_times) {
 DeviceReply UsbRawSpectrometer::sendCommand(uint8_t code, uint32_t data) {
     DeviceCommand command = {
         {'#', 'C', 'M', 'D'}, code, 4, sequenceNumber++, data};
-    if (context.write(reinterpret_cast<unsigned char*>(&command),
-                      sizeof(DeviceCommand)) < 0) {
-        throw std::runtime_error("Device write error");
-    }
+    context.write(reinterpret_cast<unsigned char*>(&command),
+                  sizeof(DeviceCommand));
     DeviceReply reply{};
     readExactly(reinterpret_cast<unsigned char*>(&reply), sizeof(DeviceReply));
     if (memcmp(reply.magic, "#ANS", 4) != 0) {
@@ -83,13 +80,29 @@ void UsbRawSpectrometer::readData(uint8_t* buffer, size_t amount) {
     }
 }
 
+static int64_t getCurrentTime() {
+    return std::chrono::duration_cast<std::chrono::milliseconds>(
+               std::chrono::system_clock::now().time_since_epoch())
+        .count();
+}
+
 void UsbRawSpectrometer::readExactly(uint8_t* buff, int amount) {
     int wasRead = 0;
+    int64_t lastSuccessfulRead = getCurrentTime();
     while (wasRead != amount) {
-        int res = context.read(buff + wasRead, amount - wasRead);
-        if (res < 0) {
-            throw std::runtime_error("Device read error");
+        int chunkSize = context.read(buff + wasRead, amount - wasRead);
+        wasRead += chunkSize;
+        int64_t currentTime = getCurrentTime();
+        if (currentTime - lastSuccessfulRead > readTimeout) {
+            throw std::runtime_error("Device read timeout");
         }
-        wasRead += res;
     }
+}
+
+void UsbRawSpectrometer::close() {
+    context.close();
+    opened = false;
+}
+bool UsbRawSpectrometer::isOpened() {
+    return opened;
 }

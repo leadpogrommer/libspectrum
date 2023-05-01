@@ -4,6 +4,11 @@ requires = [
     "wheel",
     "ninja",
     "cmake>=3.12",
+    "mkdocs",
+    "mkdocs-material",
+    "mkdocstrings",
+    "mkdocstrings[python]",
+    "mkdocs-jupyter",
 ]
 build-backend = "setuptools.build_meta"
 
