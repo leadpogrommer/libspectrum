@@ -1,23 +1,7 @@
-## Building libspectrum on Windows
+# Libspectrum
+![](https://img.shields.io/pypi/v/vmk-spectrum)
+![](https://img.shields.io/github/actions/workflow/status/leadpogrommer/libspectrum/release.yml)
 
-Run the bootstrap script to build vcpkg
+Library for interfacing with VMK made spectrometers.
 
-```cmd
-> .\thirdparty\vcpkg\bootstrap-vcpkg.bat
-```
-
-Install libftdi1 using the provided overlay port
-
-```cmd
-> .\thirdparty\vcpkg\vcpkg.exe install libftdi1:x64-windows --overlay-ports .\thirdparty\vcpkg_ports
-```
-
-Generate makefiles with CMake
-
-```cmd
-> mkdir build
-> cd build
-> cmake .. -G [desired-makefile-generator]
-```
-
-Build libspectrum with your favourite build system
+[Documentation](https://leadpogrommer.ru/libspectrum/)
