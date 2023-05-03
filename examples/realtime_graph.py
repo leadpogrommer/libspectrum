@@ -1,4 +1,4 @@
-from pyspectrum import Spectrometer, usb_spectrometer, FactoryConfig
+from pyspectrum import Spectrometer, UsbID, FactoryConfig
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib
@@ -6,7 +6,7 @@ from matplotlib.widgets import Button
 from os import path
 from time import time
 
-d = Spectrometer(usb_spectrometer(), FactoryConfig.default())
+d = Spectrometer(UsbID(), FactoryConfig.default())
 
 matplotlib.use("Qt5agg")
 figure, axs = plt.subplots(ncols=2)

@@ -5,6 +5,7 @@ from numpy.typing import NDArray
 import json
 import pytest
 from pyspectrum import Spectrometer, Data, FactoryConfig, DeviceClosedError
+from pyspectrum.device_factory import DeviceID
 
 
 @dataclass()
@@ -34,6 +35,11 @@ class MockInternalSpectrometer:
         self.__opened = False
 
 
+class MockID(DeviceID):
+    def _create(self):
+        return MockInternalSpectrometer()
+
+
 def create_factory_config(path: str, start: int, end: int, reverse: bool, intensity_scale: float = 1.0):
     data = {'start': start, 'end': end, 'reverse': reverse, 'intensity_scale': intensity_scale}
     with open(path, 'w') as f:
@@ -43,7 +49,7 @@ def create_factory_config(path: str, start: int, end: int, reverse: bool, intens
 def create_device(tmp_path, start=0, end=10, reverse=False) -> Spectrometer:
     config_path = str(tmp_path / 'cfg.json')
     create_factory_config(config_path, start, end, reverse)
-    return Spectrometer(MockInternalSpectrometer(), FactoryConfig.load(config_path))
+    return Spectrometer(MockID(), FactoryConfig.load(config_path))
 
 
 def write_calibration_data(path, wl):

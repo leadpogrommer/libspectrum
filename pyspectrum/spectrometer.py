@@ -8,6 +8,7 @@ import numpy as np
 from numpy.typing import NDArray
 
 from .data import Data, Spectrum
+from .device_factory import DeviceID, create_device
 from .errors import ConfigurationError, LoadError, DeviceClosedError
 
 
@@ -66,13 +67,13 @@ class Config:
 class Spectrometer:
     """Класс, представляющий высокоуровневую абстракцию над спектрометром"""
 
-    def __init__(self, device: internal.RawSpectrometer, factory_config: FactoryConfig = FactoryConfig.default()):
+    def __init__(self, device_id: DeviceID, factory_config: FactoryConfig = FactoryConfig.default(), reopen: bool = True):
         """
         Params:
-            device: Низкоуровневый объект устройства. В данный момент может быть получен только через `usb_spectrometer`
+            device_id: Идентификатор устройства. В настоящий момент поддерживается только UsbID.
             factory_config: Заводские настройки
         """
-        self.__device: internal.RawSpectrometer = device
+        self.__device: internal.RawSpectrometer = create_device(device_id, reopen)
         self.__factory_config = factory_config
         self.__config = Config()
         self.__device.setTimer(self.__config.exposure)
@@ -90,7 +91,7 @@ class Spectrometer:
     # --------        dark signal        --------
 
     @property
-    def dark_signal(self) -> Data|None:
+    def dark_signal(self) -> Data | None:
         """Текущий темновой сигнал"""
         return self.__dark_signal
 
@@ -238,25 +239,3 @@ class Spectrometer:
 
         if wavelength_calibration_path is not None:
             self.__load_wavelength_calibration(wavelength_calibration_path)
-
-
-__usb_device_cache: dict[tuple, internal.UsbRawSpectrometer] = dict()
-
-
-def usb_spectrometer(vid: int = 0x0403, pid: int = 0x6014, read_timeout: int = 10_000, serial: str = '', reopen: bool = True) -> internal.UsbRawSpectrometer:
-    """Create usb spectrometer for Spectrometer creation
-    Params:
-        vid: Usb vendor id
-        pid: Usb product id
-        read_timeout: таймаут чтения данных с устройства, ms
-        serial: Usb serial (по умполчанию открывается первое устройство с подходящими `vid` и `pid`)
-        reopen: Если `True`, предыдущий объект Spectrometer, использующий устройство, буде закрыт
-    Returns:
-        Device object needed for Spectrometer creation
-    """
-    device_id = (vid, pid, serial)
-    if reopen and (device_id in __usb_device_cache):
-        __usb_device_cache[device_id].close()
-    device = internal.UsbRawSpectrometer(vid, pid, serial, read_timeout)
-    __usb_device_cache[device_id] = device
-    return device
