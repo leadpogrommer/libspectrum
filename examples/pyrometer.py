@@ -5,6 +5,10 @@ import numpy as np
 from IPython.display import display
 import matplotlib.pyplot as plt
 import scipy.stats
+from typing import TypeAlias
+
+Nanometers: TypeAlias = float
+Kelvin: TypeAlias = float
 
 from pyspectrum import Spectrum
 
@@ -12,7 +16,7 @@ c2 = 14_388 * 1000
 
 # TODO: calculate error
 class Pyrometer:
-    def __init__(self, calibration_spectrum: Spectrum, calibration_temp: float) -> None:
+    def __init__(self, calibration_spectrum: Spectrum, calibration_temp: Kelvin) -> None:
         self.temp = calibration_temp
         self.calibration = calibration_spectrum
         # run results
@@ -76,10 +80,10 @@ class Pyrometer:
 
         return np.array([temperature, deltaT])
     
-    def run(self, spectrum: Spectrum, wl_min: float, wl_max: float) -> NDArray:
+    def run(self, spectrum: Spectrum, wavelength_range: tuple[Nanometers, Nanometers]) -> None:
         self.input_data = spectrum
-        xmax = c2/wl_min
-        xmin = c2/wl_max
+        xmax = c2/wavelength_range[0]
+        xmin = c2/wavelength_range[1]
         self.xmax = xmax
         self.xmin = xmin
         self.temperatures, self.deltas = np.apply_along_axis(lambda a: self._get_temp(spectrum.wavelength, a, xmin, xmax), 1, spectrum.intensity).T
@@ -88,30 +92,37 @@ class Pyrometer:
         self._get_temp(spectrum.wavelength, spectrum.intensity[-1], xmin, xmax)
 
     def show(self, filename: None|str =None):
-        fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2, 2, figsize=(8*2, 6*2))
+        fig, ((ax1, ax5), (ax2, ax3), (ax4, _)) = plt.subplots(3, 2, figsize=(8*2, 6*3))
         xmin, xmax = self.xmin, self.xmax
 
-        ax1.fill_between(np.arange(len(self.temperatures)), self.temperatures - self.deltas, self.temperatures + self.deltas, color='red')
+        # ax1.fill_between(np.arange(len(self.temperatures)), self.temperatures - self.deltas, self.temperatures + self.deltas, color='red')
         ax1.plot(self.temperatures)
-        ax1.set_ylabel('temperature')
-        ax1.set_xlabel('measurement')
+        ax1.set_title('График температуры')
+        ax1.set_ylabel('Температура, $K$')
+        ax1.set_xlabel('Номер измерения')
+
+        ax5.plot(self.deltas)
+        ax5.set_title('График погрешности')
+        ax5.set_ylabel('Погрешность, $K$')
+        ax5.set_xlabel('Номер измерения')
+
         
-        ax2.set_title('Spectrum (last measurement)')
-        ax2.set_ylabel('intensity')
-        ax2.set_xlabel('λ, нм')
+        ax2.set_title('Спектр (последнее измерение)')
+        ax2.set_ylabel('Интенсивность')
+        ax2.set_xlabel(r'$\lambda$, нм')
         ax2.plot(self.input_data.wavelength, self.input_data.intensity[-1])
         ax2.vlines([c2/self.xmin, c2/self.xmax], ymin=self.input_data.intensity[-1].min(), ymax=self.input_data.intensity[-1].max())
 
-        ax3.set_title('Last spectrum in wien coordinates')
-        ax3.set_xlabel('C2/λi')
-        ax3.set_ylabel('ln(λi^4 * Ni)')
+        ax3.set_title('Последний спектр в координатах Вина')
+        ax3.set_xlabel(r'$C_2/\lambda_i, K$')
+        ax3.set_ylabel(r'$ln(\lambda_i^4 * N_i)$')
         ax3.plot(self.wien_x, self.wien_y)
         ax3.vlines([self.xmin, self.xmax], ymin=np.min(self.wien_y), ymax=np.max(self.wien_y))
 
 
-        ax4.set_title('Last spectrum in wien coordinates (close-up)')
-        ax4.set_xlabel('C2/λi')
-        ax4.set_ylabel('ln(λi^4 * Ni)')
+        ax4.set_title('Последний спектр в координатах Вина (Ближе)')
+        ax4.set_xlabel(r'$C_2/\lambda_i, K$')
+        ax4.set_ylabel(r'$ln(\lambda_i^4 * N_i)$')
 
         imin = (np.abs(self.wien_x - xmin)).argmin()
         imax = (np.abs(self.wien_x - xmax)).argmin()
@@ -124,7 +135,12 @@ class Pyrometer:
         if filename is not None:
             fig.savefig(filename)
 
-    def get_temperature(self):
-        return np.array([self.temperatures, self.deltas]).T
+    def get_temperature(self) -> NDArray[np.float_]:
+        """Get temperature in Kelvin"""
+        return self.temperatures
+    
+    def get_deviation(self) -> NDArray[np.float_]:
+        """Get temperature deviation in Kelvin"""
+        return self.deltas
 
 

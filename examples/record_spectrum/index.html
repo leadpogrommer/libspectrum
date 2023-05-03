@@ -15,7 +15,7 @@
         <link rel="next" href="../pyrometer/">
       
       <link rel="icon" href="../../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.4.2, mkdocs-material-9.1.9">
+      <meta name="generator" content="mkdocs-1.4.3, mkdocs-material-9.1.9">
     
     
       
@@ -1439,7 +1439,7 @@ Licensed under the Apache License, Version 2.0.
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[&nbsp;]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[1]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
         
         
         <div class="CodeMirror cm-s-jupyter">
@@ -1454,9 +1454,9 @@ Licensed under the Apache License, Version 2.0.
                     </div>
                 </clipboard-copy>
             </div>
-            <div class="highlight-ipynb hl-python "><pre><span></span><span class="kn">from</span> <span class="nn">pyspectrum</span> <span class="kn">import</span> <span class="n">Spectrometer</span><span class="p">,</span> <span class="n">usb_spectrometer</span><span class="p">,</span> <span class="n">Spectrum</span><span class="p">,</span> <span class="n">Data</span>
+            <div class="highlight-ipynb hl-python "><pre><span></span><span class="kn">from</span> <span class="nn">pyspectrum</span> <span class="kn">import</span> <span class="n">Spectrometer</span><span class="p">,</span> <span class="n">UsbID</span><span class="p">,</span> <span class="n">Spectrum</span><span class="p">,</span> <span class="n">Data</span>
 </pre></div>
-<div id="cell-1" class="clipboard-copy-txt">from pyspectrum import Spectrometer, usb_spectrometer, Spectrum, Data</div>
+<div id="cell-1" class="clipboard-copy-txt">from pyspectrum import Spectrometer, UsbID, Spectrum, Data</div>
         
         </div>
     </div>
@@ -1465,13 +1465,13 @@ Licensed under the Apache License, Version 2.0.
 </div>
 
 </div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs  ">
-<div  class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs  ">
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
+<div  class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
 <div class="jp-Cell-inputWrapper">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[&nbsp;]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[6]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
         
         
         <div class="CodeMirror cm-s-jupyter">
@@ -1487,9 +1487,7 @@ Licensed under the Apache License, Version 2.0.
                 </clipboard-copy>
             </div>
             <div class="highlight-ipynb hl-python "><pre><span></span><span class="c1"># Открываем устройство</span>
-<span class="c1"># Параметр reopen нужен для того, чтобы при повторном исполнении ячейки</span>
-<span class="c1"># не было ошибки, что устройство уже было открыто</span>
-<span class="n">device</span> <span class="o">=</span> <span class="n">Spectrometer</span><span class="p">(</span><span class="n">usb_spectrometer</span><span class="p">(</span><span class="n">reopen</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>
+<span class="n">device</span> <span class="o">=</span> <span class="n">Spectrometer</span><span class="p">(</span><span class="n">UsbID</span><span class="p">())</span>
 
 <span class="c1"># Настройка устройства</span>
 <span class="n">device</span><span class="o">.</span><span class="n">set_config</span><span class="p">(</span>
@@ -1502,9 +1500,7 @@ Licensed under the Apache License, Version 2.0.
 <span class="n">device</span><span class="o">.</span><span class="n">read_dark_signal</span><span class="p">(</span><span class="n">n_times</span><span class="o">=</span><span class="mi">1000</span><span class="p">)</span>
 </pre></div>
 <div id="cell-2" class="clipboard-copy-txt"># Открываем устройство
-# Параметр reopen нужен для того, чтобы при повторном исполнении ячейки
-# не было ошибки, что устройство уже было открыто
-device = Spectrometer(usb_spectrometer(reopen=True))
+device = Spectrometer(UsbID())
 
 # Настройка устройства
 device.set_config(
@@ -1522,6 +1518,27 @@ device.read_dark_signal(n_times=1000) </div>
 </div>
 </div>
 
+<div class="jp-Cell-outputWrapper">
+<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
+</div>
+
+
+<div class="jp-OutputArea jp-Cell-outputArea">
+<div class="jp-OutputArea-child">
+    
+    <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+
+
+<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="application/vnd.jupyter.stderr">
+<pre>Wavelength calibration loaded
+</pre>
+</div>
+</div>
+
+</div>
+
+</div>
+
 </div>
 </div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs  ">
 <div  class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs  ">
@@ -1529,7 +1546,7 @@ device.read_dark_signal(n_times=1000) </div>
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[&nbsp;]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[5]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
         
         
         <div class="CodeMirror cm-s-jupyter">

@@ -18,5 +18,5 @@ hide:
     selection:
         inherited_members: true
 
-## usb_spectrometer
-::: pyspectrum.usb_spectrometer
+## UsbID
+::: pyspectrum.UsbID

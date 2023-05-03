@@ -1,11 +1,11 @@
-from pyspectrum import Spectrometer, FactoryConfig, usb_spectrometer
+from pyspectrum import Spectrometer, FactoryConfig, UsbID, EthernetID
 from time import time
 
 exposures = [1, 2, 3, 4, 5, 10, 20, 50, 100, 200, 250, 500]
-d = Spectrometer(usb_spectrometer(), FactoryConfig.default())
+d = Spectrometer(EthernetID('10.116.220.2'), FactoryConfig.default())
 
 for exposure in exposures:
-    n = int(min(500, 20 / (exposure / 1000)))
+    n = int(min(500, 10 / (exposure / 1000)))
     d.set_config(exposure=exposure, n_times=n)
 
     print(f'{exposure=} {n=} ...')

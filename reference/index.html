@@ -15,7 +15,7 @@
         <link rel="next" href="../examples/record_spectrum/">
       
       <link rel="icon" href="../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.4.2, mkdocs-material-9.1.9">
+      <meta name="generator" content="mkdocs-1.4.3, mkdocs-material-9.1.9">
     
     
       
@@ -505,9 +505,29 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#usb_spectrometer" class="md-nav__link">
-    usb_spectrometer
+  <a href="#usbid" class="md-nav__link">
+    UsbID
   </a>
+  
+    <nav class="md-nav" aria-label="UsbID">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#pyspectrum.device_factory.UsbID.vid" class="md-nav__link">
+    vid
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pyspectrum.device_factory.UsbID.pid" class="md-nav__link">
+    pid
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
   
 </li>
       
@@ -803,9 +823,29 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#usb_spectrometer" class="md-nav__link">
-    usb_spectrometer
+  <a href="#usbid" class="md-nav__link">
+    UsbID
   </a>
+  
+    <nav class="md-nav" aria-label="UsbID">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#pyspectrum.device_factory.UsbID.vid" class="md-nav__link">
+    vid
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pyspectrum.device_factory.UsbID.pid" class="md-nav__link">
+    pid
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
   
 </li>
       
@@ -854,7 +894,7 @@
 
 
 <h3 id="pyspectrum.spectrometer.Spectrometer.__init__" class="doc doc-heading">
-<code class="highlight language-python"><span class="fm">__init__</span><span class="p">(</span><span class="n">device</span><span class="p">,</span> <span class="n">factory_config</span><span class="o">=</span><span class="n">FactoryConfig</span><span class="o">.</span><span class="n">default</span><span class="p">())</span></code>
+<code class="highlight language-python"><span class="fm">__init__</span><span class="p">(</span><span class="n">device_id</span><span class="p">,</span> <span class="n">factory_config</span><span class="o">=</span><span class="n">FactoryConfig</span><span class="o">.</span><span class="n">default</span><span class="p">(),</span> <span class="n">reopen</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></code>
 
 </h3>
 
@@ -874,11 +914,11 @@
     </thead>
     <tbody>
         <tr>
-          <td><code>device</code></td>
+          <td><code>device_id</code></td>
           <td>
-                <code><span title="_pyspectrum">internal</span>.<span title="_pyspectrum.RawSpectrometer">RawSpectrometer</span></code>
+                <code><span title="pyspectrum.device_factory.DeviceID">DeviceID</span></code>
           </td>
-          <td><p>Низкоуровневый объект устройства. В данный момент может быть получен только через <code>usb_spectrometer</code></p></td>
+          <td><p>Идентификатор устройства. В настоящий момент поддерживаются UsbID, EthernetID</p></td>
           <td>
               <em>required</em>
           </td>
@@ -1407,7 +1447,7 @@
 <code class="highlight language-python"><span class="n">intensity</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span></code>
   
   <span class="doc doc-labels">
-      <small class="doc doc-label doc-label-class-attribute"><code>class-attribute</code></small>
+      <small class="doc doc-label doc-label-instance-attribute"><code>instance-attribute</code></small>
   </span>
 
 </h3>
@@ -1433,7 +1473,7 @@
 <code class="highlight language-python"><span class="n">clipped</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">[</span><span class="nb">bool</span><span class="p">]</span></code>
   
   <span class="doc doc-labels">
-      <small class="doc doc-label doc-label-class-attribute"><code>class-attribute</code></small>
+      <small class="doc doc-label doc-label-instance-attribute"><code>instance-attribute</code></small>
   </span>
 
 </h3>
@@ -1459,7 +1499,7 @@
 <code class="highlight language-python"><span class="n">exposure</span><span class="p">:</span> <span class="nb">int</span></code>
   
   <span class="doc doc-labels">
-      <small class="doc doc-label doc-label-class-attribute"><code>class-attribute</code></small>
+      <small class="doc doc-label doc-label-instance-attribute"><code>instance-attribute</code></small>
   </span>
 
 </h3>
@@ -1643,7 +1683,7 @@
 <code class="highlight language-python"><span class="n">wavelength</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span></code>
   
   <span class="doc doc-labels">
-      <small class="doc doc-label doc-label-class-attribute"><code>class-attribute</code></small>
+      <small class="doc doc-label doc-label-instance-attribute"><code>instance-attribute</code></small>
   </span>
 
 </h3>
@@ -1663,98 +1703,85 @@
 
   </div>
 
-</div><h2 id="usb_spectrometer">usb_spectrometer</h2>
+</div><h2 id="usbid">UsbID</h2>
 
 
-<div class="doc doc-object doc-function">
+<div class="doc doc-object doc-class">
 
 
 
   <div class="doc doc-contents first">
+      <p class="doc doc-class-bases">
+        Bases: <code><span title="pyspectrum.device_factory.DeviceID">DeviceID</span></code></p>
+
   
-      <p>Create usb spectrometer for Spectrometer creation</p>
+      <p>Идентификатор usb спектрометра</p>
 
-  <p><strong>Parameters:</strong></p>
-  <table>
-    <thead>
-      <tr>
-        <th>Name</th>
-        <th>Type</th>
-        <th>Description</th>
-        <th>Default</th>
-      </tr>
-    </thead>
-    <tbody>
-        <tr>
-          <td><code>vid</code></td>
-          <td>
-                <code>int</code>
-          </td>
-          <td><p>Usb vendor id</p></td>
-          <td>
-                <code>1027</code>
-          </td>
-        </tr>
-        <tr>
-          <td><code>pid</code></td>
-          <td>
-                <code>int</code>
-          </td>
-          <td><p>Usb product id</p></td>
-          <td>
-                <code>24596</code>
-          </td>
-        </tr>
-        <tr>
-          <td><code>read_timeout</code></td>
-          <td>
-                <code>int</code>
-          </td>
-          <td><p>таймаут чтения данных с устройства, ms</p></td>
-          <td>
-                <code>10000</code>
-          </td>
-        </tr>
-        <tr>
-          <td><code>serial</code></td>
-          <td>
-                <code>str</code>
-          </td>
-          <td><p>Usb serial (по умполчанию открывается первое устройство с подходящими <code>vid</code> и <code>pid</code>)</p></td>
-          <td>
-                <code>&#39;&#39;</code>
-          </td>
-        </tr>
-        <tr>
-          <td><code>reopen</code></td>
-          <td>
-                <code>bool</code>
-          </td>
-          <td><p>Если <code>True</code>, предыдущий объект Spectrometer, использующий устройство, буде закрыт</p></td>
-          <td>
-                <code>False</code>
-          </td>
-        </tr>
-    </tbody>
-  </table>
 
-  <p><strong>Returns:</strong></p>
-  <table>
-    <thead>
-      <tr>
-        <th>Type</th>
-        <th>Description</th>
-      </tr>
-    </thead>
-    <tbody>
-        <tr>
-          <td>
-                <code><span title="_pyspectrum">internal</span>.<span title="_pyspectrum.UsbRawSpectrometer">UsbRawSpectrometer</span></code>
-          </td>
-          <td><p>Device object needed for Spectrometer creation</p></td>
-        </tr>
-    </tbody>
-  </table>
+
+  
+
+  <div class="doc doc-children">
+
+
+
+
+
+
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h3 id="pyspectrum.device_factory.UsbID.vid" class="doc doc-heading">
+<code class="highlight language-python"><span class="n">vid</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1027</span></code>
+  
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-instance-attribute"><code>instance-attribute</code></small>
+      <small class="doc doc-label doc-label-class-attribute"><code>class-attribute</code></small>
+  </span>
+
+</h3>
+
+
+  <div class="doc doc-contents ">
+  
+      <p>Usb product id</p>
+  </div>
+
+</div>
+
+
+
+
+
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h3 id="pyspectrum.device_factory.UsbID.pid" class="doc doc-heading">
+<code class="highlight language-python"><span class="n">pid</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">24596</span></code>
+  
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-instance-attribute"><code>instance-attribute</code></small>
+      <small class="doc doc-label doc-label-class-attribute"><code>class-attribute</code></small>
+  </span>
+
+</h3>
+
+
+  <div class="doc doc-contents ">
+  
+      <p>Usb serial (по умоолчанию открывается первое устройство с подходящими <code>vid</code> и <code>pid</code>)</p>
+  </div>
+
+</div>
+
+
+
+
+  </div>
 
   </div>
 
