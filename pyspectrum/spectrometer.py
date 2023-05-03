@@ -70,7 +70,7 @@ class Spectrometer:
     def __init__(self, device_id: DeviceID, factory_config: FactoryConfig = FactoryConfig.default(), reopen: bool = True):
         """
         Params:
-            device_id: Идентификатор устройства. В настоящий момент поддерживается только UsbID.
+            device_id: Идентификатор устройства. В настоящий момент поддерживаются UsbID, EthernetID
             factory_config: Заводские настройки
         """
         self.__device: internal.RawSpectrometer = create_device(device_id, reopen)

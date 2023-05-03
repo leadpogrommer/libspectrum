@@ -3,6 +3,7 @@ from typing import Any
 from abc import ABC, abstractmethod
 
 import _pyspectrum as internal
+from .ethernet_device import EthernetDevice
 
 
 class DeviceID(ABC):
@@ -25,6 +26,14 @@ class UsbID(DeviceID):
 
     def _create(self):
         return internal.UsbRawSpectrometer(self.vid, self.pid, self.serial, self.read_timeout)
+
+
+@dataclass(unsafe_hash=True)
+class EthernetID(DeviceID):
+    ip: str
+
+    def _create(self):
+        return EthernetDevice(self.ip)
 
 
 __device_cache: dict[DeviceID, Any] = dict()
