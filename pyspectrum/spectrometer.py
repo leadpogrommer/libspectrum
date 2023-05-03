@@ -243,7 +243,7 @@ class Spectrometer:
 __usb_device_cache: dict[tuple, internal.UsbRawSpectrometer] = dict()
 
 
-def usb_spectrometer(vid: int = 0x0403, pid: int = 0x6014, read_timeout: int = 10_000, serial: str = '', reopen: bool = False) -> internal.UsbRawSpectrometer:
+def usb_spectrometer(vid: int = 0x0403, pid: int = 0x6014, read_timeout: int = 10_000, serial: str = '', reopen: bool = True) -> internal.UsbRawSpectrometer:
     """Create usb spectrometer for Spectrometer creation
     Params:
         vid: Usb vendor id
