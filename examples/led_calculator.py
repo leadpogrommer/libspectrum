@@ -375,6 +375,8 @@ class LedParameters():
             #     else:
             #         d = 0.5
             #         target = 0
+            if self.spectrum.wavelength[i]>780:
+                break
             start_color = self.wavelength_to_rgb(self.spectrum.wavelength[i])
             ax.bar(self.spectrum.wavelength[i], samples[i],
                    color=(start_color[0], start_color[1], start_color[2]))
