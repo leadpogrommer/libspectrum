@@ -25,7 +25,7 @@ hide:
 ## Windows
 1. Установить [драйвер FTDI](https://ftdichip.com/wp-content/uploads/2021/08/CDM212364_Setup.zip) (Если на компьютере ранее работал `Atom`, шаг можно пропустить)
 3. Установить [Распространяемый пакет Visual C++ для Visual Studio 2015](https://www.microsoft.com/ru-RU/download/details.aspx?id=48145)
-3. Установить Python (минимальная версия - 3.10)  
+3. Установить **64-битный** Python (минимальная версия - 3.10)  
 1. Установить библиотеку  
     ```
    pip install vmk-spectrum

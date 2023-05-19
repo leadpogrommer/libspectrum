@@ -121,7 +121,7 @@ class CMakeBuild(build_ext):
 # logic and declaration, and simpler if you include description/version in a file.
 setup(
     name="vmk-spectrum",
-    version="0.0.7",
+    version="0.0.8",
     author="leadpogrommer",
     long_description="Library for communication with VMK spectrometers",
     long_description_content_type="text/plain",
@@ -133,5 +133,5 @@ setup(
     zip_safe=False,
     extras_require={"test": ["pytest>=6.0"]},
     python_requires=">=3.10",
-    install_requires=['numpy', 'matplotlib'],
+    install_requires=['numpy', 'matplotlib', 'scipy'],
 )

@@ -7,6 +7,17 @@ from numpy.typing import NDArray
 from .errors import LoadError
 
 
+def _check_slice_key(key):
+    if type(key) == slice:
+        return
+    if type(key) == tuple:
+        for k in key:
+            if type(k) != slice:
+                raise Exception('Only slices are supported')
+        return
+    raise Exception('Only slices are supported')
+
+
 @dataclass()
 class Data:
     """Сырые данные, полученные со спектрометра"""
@@ -104,6 +115,14 @@ class Data:
         cls = self.__class__
         return f'{cls.__name__}({self.n_times = }, {self.n_numbers = })'
 
+    def __getitem__(self, key) -> 'Data':
+        _check_slice_key(key)
+        return Data(
+            intensity=self.intensity.__getitem__(key),
+            clipped=self.clipped.__getitem__(key),
+            exposure=self.exposure
+        )
+
 
 @dataclass()
 class Spectrum(Data):
@@ -125,3 +144,17 @@ class Spectrum(Data):
 
     def __mul__(self, other):
         return super().__mul__(other).to_spectrum(self.wavelength)
+
+    def __getitem__(self, key) -> 'Spectrum':
+        _check_slice_key(key)
+        if type(key) == tuple and len(key) >= 2:
+            new_wl = self.wavelength[key[1]]
+        else:
+            new_wl = self.wavelength
+        return Spectrum(
+            wavelength=new_wl,
+            exposure=self.exposure,
+            intensity=self.intensity.__getitem__(key),
+            clipped=self.clipped.__getitem__(key)
+        )
+

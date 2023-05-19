@@ -4,7 +4,7 @@ import numpy as np
 from numpy.typing import NDArray
 import json
 import pytest
-from pyspectrum import Spectrometer, Data, FactoryConfig, DeviceClosedError
+from pyspectrum import Spectrometer, Data, FactoryConfig, DeviceClosedError, Spectrum
 from pyspectrum.device_factory import DeviceID
 
 
@@ -174,3 +174,26 @@ def test_device_close(device: Spectrometer):
     device.close()
     with pytest.raises(DeviceClosedError):
         device.read_raw()
+
+def test_slices():
+    data = Data(
+        exposure=1,
+        intensity=np.array([[10,11,12], [11,23,13], [14,15,16]]),
+        clipped=np.array([[0,0,0], [0,0,0], [0,0,0]])
+    )
+    assert np.array_equal(data[1:].intensity, [[11,23,13], [14,15,16]])
+    # print("\n"+str(data[1:,1].intensity), flush=True)
+    assert np.array_equal(data[1:,1:2].intensity, np.array([[23], [15]]))
+
+    data = Spectrum(
+        exposure=1,
+        intensity=np.array([[10,11,12], [11,23,13], [14,15,16]]),
+        clipped=np.array([[0,0,0], [0,0,0], [0,0,0]]),
+        wavelength=np.array([100, 101, 102])
+    )
+
+    assert np.array_equal(data[1:].intensity, [[11,23,13], [14,15,16]])
+    assert np.array_equal(data[1:,1:2].intensity, np.array([[23], [15]]))
+    assert np.array_equal(data[1:].wavelength, data.wavelength)
+    assert np.array_equal(data[:,1:].wavelength, np.array([101, 102]))
+
