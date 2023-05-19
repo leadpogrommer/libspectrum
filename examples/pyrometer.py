@@ -92,7 +92,7 @@ class Pyrometer:
         self._get_temp(spectrum.wavelength, spectrum.intensity[-1], xmin, xmax)
 
     def show(self, filename: None|str =None):
-        fig, ((ax1, ax5), (ax2, ax3), (ax4, _)) = plt.subplots(3, 2, figsize=(8*2, 6*3))
+        fig, ((ax1, ax5), (ax2, ax3), (ax4, ax6)) = plt.subplots(3, 2, figsize=(8*2, 6*3))
         xmin, xmax = self.xmin, self.xmax
 
         # ax1.fill_between(np.arange(len(self.temperatures)), self.temperatures - self.deltas, self.temperatures + self.deltas, color='red')
@@ -131,6 +131,11 @@ class Pyrometer:
         ax4.set_xlim((self.wien_x[imin], self.wien_x[imax]))
         ax4.set_ylim((self.wien_y[imin:imax].min(), self.wien_y[imin:imax].max()))
         ax4.plot(self.wien_x, self.wien_x*self.line_m + self.line_c)
+
+        ax6.set_title('Последний спектр в координатах Вина - аппрокс. прямая')
+        ax6.set_xlabel(r'$C_2/\lambda_i, K$')
+        ax6.set_ylabel(r'$ln(\lambda_i^4 * N_i)$')
+        ax6.plot(self.wien_x, self.wien_y - (self.wien_x*self.line_m + self.line_c))
 
         if filename is not None:
             fig.savefig(filename)
