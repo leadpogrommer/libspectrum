@@ -12,59 +12,55 @@ Light_velocity_constant = 299792458
 full_angle = 360 * 360 / 3.14
 
 
-class LedParameters():
-    intensity_scale = 80000 * (2 ** 16)
-    spectrum = None
-    reshaped_spectrum = None
-    calibration_XYZ = None
-    cc_t = None
-    f_l = None
-    colors = {}
-    XYZ = None
-    uv = None
-    xyY = None
-    flicker_graph = None
-    minWL = 400
-    maxWL = 830
-    """docstring for LedParameters"""
+class LedParameters:
 
-    def __init__(self):
-        pass
+    def __init__(self, mw=400, mxw=781):
+        # self.intensity_scale=
+        self.spectrum = None
+        # self.intensity_scale = 80000 * (2 ** 16)
+        self.reshaped_spectrum = None
+        self.cc_t = None
+        self.f_l = None
+        self.colors = {}
+        self.flicker_graph = None
+        self.bb = None
+        self.minWL = mw
+        self.maxWL = mxw
+
+    def normalize(self, reshaped):
+        mi = min(reshaped.values())
+        ma = max(reshaped.values())
+        for i in range(self.minWL, self.maxWL):
+            x = reshaped[i] - mi
+            x /= ma - mi
+            reshaped.update({i: x})
+        return reshaped
 
     def reshape_spectrum(self, spectrum: Spectrum) -> dict[int, float]:
-
-        """
-
-        :param spectrum: Spectrum
-        :return: spectrum distribution wavelengths from 360 to 830, with step 1 nm, 
-        interpolation by nearest neighbor using mean value on all recorded samples
-        """
-
         reshaped_spectrum = {}
         samples = np.mean(spectrum.intensity, axis=0)
         target_wavelength_index = 0
         target_wavelength = self.minWL
         for i in range(len(spectrum.wavelength)):
-            if target_wavelength > self.maxWL:
+            if target_wavelength > self.maxWL - 1:
                 break
             if (abs(target_wavelength - spectrum.wavelength[target_wavelength_index]) >=
                     abs(target_wavelength - spectrum.wavelength[i])):
                 target_wavelength_index = i
             else:
                 tmp = samples[target_wavelength_index]
-                # tmp-=self.minI
-                # tmp=tmp/(self.maxI-self.minI)
                 reshaped_spectrum.update({target_wavelength: tmp})
                 target_wavelength += 1
 
         return reshaped_spectrum
 
-    def non_shaped_spectrum_xyY_calculation(self, spectrum: Spectrum) -> (float, float, float):
-        def g(x, u, o1, o2):
-            if x < u:
-                return exp((-0.5 * (x - u) ** 2) / o1 ** 2)
+    @staticmethod
+    def non_shaped_spectrum_xyY_calculation(spectrum: Spectrum) -> (float, float, float):
+        def g(p, u, o1, o2):
+            if p < u:
+                return exp((-0.5 * (p - u) ** 2) / o1 ** 2)
             else:
-                return exp((-0.5 * (x - u) ** 2) / o2 ** 2)
+                return exp((-0.5 * (p - u) ** 2) / o2 ** 2)
 
         X = 0.0
         Y = 0.0
@@ -85,23 +81,15 @@ class LedParameters():
                          spectrum.wavelength[i] - spectrum.wavelength[i + 1])
         x = X / (X + Y + Z)
         y = Y / (X + Y + Z)
-        Y /= self.intensity_scale
         return x, y, Y
 
     def reshape_spectrum_single(self, spectrum, wavelength) -> dict[int, float]:
-
-        """
-
-        :param spectrum: Spectrum
-        :return: spectrum distribution wavelengths from 360 to 830, with step 1 nm, interpolation by nearest neighbor
-        """
-
         reshaped_spectrum = {}
         samples = spectrum
         target_wavelength_index = 0
         target_wavelength = self.minWL
         for i in range(len(spectrum)):
-            if target_wavelength > self.maxWL:
+            if target_wavelength > self.maxWL - 1:
                 break
             if (abs(target_wavelength - wavelength[target_wavelength_index]) >=
                     abs(target_wavelength - wavelength[i])):
@@ -113,23 +101,30 @@ class LedParameters():
 
         return reshaped_spectrum
 
-    def _calculate_xyz(self, reshaped_spectrum) -> (float, float, float):
+    def _calculate_xyY(self, reshaped_spectrum) -> (float, float, float):
         X = 0.0
         Y = 0.0
         Z = 0.0
+        k = 0.0
+        cie_e_ill = 100
+        for j in range(self.minWL, self.maxWL):
+            k += cie_e_ill * CIE_XYZ_Func[j][1]
+        k = 1 / k
         for i in range(self.minWL, self.maxWL):
-            X += reshaped_spectrum[i] * CIE_XYZ_Func[i][0]
-            Y += reshaped_spectrum[i] * CIE_XYZ_Func[i][1]
-            Z += reshaped_spectrum[i] * CIE_XYZ_Func[i][2]
+            X += reshaped_spectrum[i] * cie_e_ill * CIE_XYZ_Func[i][0]
+            Y += reshaped_spectrum[i] * cie_e_ill * CIE_XYZ_Func[i][1]
+            Z += reshaped_spectrum[i] * cie_e_ill * CIE_XYZ_Func[i][2]
+        X *= k
+        Y *= k
+        Z *= k
         x = X / (X + Y + Z)
         y = Y / (X + Y + Z)
         return x, y, Y
 
-    def _calculate_cct(self, x: float, y: float) -> float:
-
+    @staticmethod
+    def _calculate_cct(x: float, y: float) -> float:
         P = (x - 0.332) / (y - 0.1858)
         CCT = 5520.33 - 6823.3 * P + 3525 * P * P - 449 * P * P * P
-        self.cc_t = CCT
         return CCT
 
     def _calculate_fl(self, spectrum: Spectrum) -> float:
@@ -161,7 +156,6 @@ class LedParameters():
 
     def _calculate_luminous_power(self, reshaped) -> float:
         lf = 0.0
-        # func=(0.821*g(spectrum.wavelength[i],568.8,46.9,40.5)+0.286*g(spectrum.wavelength[i],530.9,16.3,31.1))*(spectrum.wavelength[i]-spectrum.wavelength[i+1])
         for i in range(self.minWL, self.maxWL):
             lf += Scotopic_func[i] * reshaped[i]
         lf *= Km_CONSTANT / Light_velocity_constant
@@ -172,15 +166,19 @@ class LedParameters():
         c2: float = 1.4388e-2
         blackbody = {}
         for i in range(self.minWL, self.maxWL):
-            j = i * (1e-9)
+            j = i * 1e-9
             b = (j * temperature)
             b = c2 / b
             b = (exp(b) - 1)
             b = c1 / b
             b /= (j ** 5)
-            b *= (1e-9)
+            b *= 1e-9
+            # b *= 100
+            # b *= self.intensity_scale
             blackbody.update({i: b})
-        return blackbody
+        self.bb = blackbody
+        # self.bb=self.normalize(self.bb)
+        return self.bb
 
     def reference(self, source_sd: dict[int, float], ref_sd: dict[int, float]):
         result = {}
@@ -191,7 +189,7 @@ class LedParameters():
             Z = 0.0
             k = 0.0
             for j in range(self.minWL, self.maxWL, 5):
-                k += color[j] * CIE_XYZ_Func[j][1]
+                k += sd[j] * CIE_XYZ_Func[j][1] * 5
             k = 100 / k
             for j in range(self.minWL, self.maxWL, 5):
                 X += sd[j] * color[j] * CIE_XYZ_Func[j][0] * 5
@@ -203,7 +201,7 @@ class LedParameters():
             Z *= k
             x = X / (X + Y + Z)
             y = Y / (X + Y + Z)
-            Y = Y / self.intensity_scale
+            Y = Y
             return x, y, Y
 
         def d(u: float, v: float) -> float:
@@ -212,17 +210,20 @@ class LedParameters():
         def c(u: float, v: float) -> float:
             return (4 - u - 10 * v) / v
 
-        xyY_source = self._calculate_xyz(source_sd)
+        xyY_source = self._calculate_xyY(source_sd)
         uv_source = self.calculate_uv(xyY_source[0], xyY_source[1])
 
         c_source = c(uv_source[0], uv_source[1])
         d_source = d(uv_source[0], uv_source[1])
 
-        xyY_ref = self._calculate_xyz(ref_sd)
-        uv_ref = self.calculate_uv(xyY_ref[0], xyY_ref[1])
+        xyY_ref = self._calculate_xyY(ref_sd)
 
+        uv_ref = self.calculate_uv(xyY_ref[0], xyY_ref[1])
         c_ref = c(uv_ref[0], uv_ref[1])
         d_ref = d(uv_ref[0], uv_ref[1])
+        self.cri_true = pow((uv_source[0] - uv_ref[0]) ** 2 + (uv_source[1] - uv_ref[1]) ** 2, 0.5) < 0.0054
+        # source_sd=self.normalize(source_sd.copy())
+        # ref_sd=self.normalize(ref_sd.copy())
         for key, i in color_standards.items():
             xyY_source_clr = xy_for_colors(source_sd, i)
             xyY_ref_clr = xy_for_colors(ref_sd, i)
@@ -230,15 +231,15 @@ class LedParameters():
             uv_source_clr = self.calculate_uv(xyY_source_clr[0], xyY_source_clr[1])
             uv_ref_clr = self.calculate_uv(xyY_ref_clr[0], xyY_ref_clr[1])
 
-            c_ref_clr = c(uv_ref_clr[0], uv_ref_clr[1])
-            d_ref_clr = d(uv_ref_clr[0], uv_ref_clr[1])
+            # c_ref_clr = c(uv_ref_clr[0], uv_ref_clr[1])
+            # d_ref_clr = d(uv_ref_clr[0], uv_ref_clr[1])
 
             c_source_clr = c(uv_source_clr[0], uv_source_clr[1])
             d_source_clr = d(uv_source_clr[0], uv_source_clr[1])
 
-            u_source_clr = (10.872 + 0.404 * c_source * c_source_clr / c_ref - 4 * d_source * d_source_clr / d_ref) \
-                           / (16.518 + 1.481 * c_source * c_source_clr / c_ref - d_source * d_source_clr / d_ref)
-            v_source_clr = 5.52 / (16.518 + 1.481 * c_source * c_source_clr / c_ref - d_source * d_source_clr / d_ref)
+            u_source_clr = (10.872 + 0.404 * c_ref * c_source_clr / c_source - 4 * d_ref * d_source_clr / d_source) \
+                           / (16.518 + 1.481 * c_ref * c_source_clr / c_source - d_ref * d_source_clr / d_source)
+            v_source_clr = 5.52 / (16.518 + 1.481 * c_ref * c_source_clr / c_source - d_ref * d_source_clr / d_source)
 
             W_s = 25 * pow(xyY_source_clr[2], 1 / 3) - 17
             U_s = 13 * W_s * (u_source_clr - uv_ref[0])
@@ -260,23 +261,24 @@ class LedParameters():
 
     def _calculate_cri(self) -> float:
 
-        reshaped = self.reshaped_spectrum
+        reshaped = self.reshaped_spectrum.copy()
 
-        x, y, Y = self._calculate_xyz(reshaped)
+        x, y, Y = self._calculate_xyY(self.reshaped_spectrum)
         CCT = self._calculate_cct(x, y)
         sd_ref = self.blackbody_sd(CCT)
 
         colors = self.reference(reshaped, sd_ref)
         res = 0.0
-        len = 0
+        ln = 0
         for i in colors.values():
             res += i
-            len += 1
-        res /= len
+            ln += 1
+        res /= ln
         self.colors.update({'cri': res})
         return res
 
-    def calculate_uv(self, x: float, y: float) -> (float, float):
+    @staticmethod
+    def calculate_uv(x: float, y: float) -> (float, float):
         u = 4 * x / (12 * y - 2 * x + 3)
         v = 6 * y / (12 * y - 2 * x + 3)
         return u, v
@@ -284,17 +286,20 @@ class LedParameters():
     def run(self, spectrum: Spectrum):
         self.spectrum = spectrum
         self.reshaped_spectrum = self.reshape_spectrum(spectrum)
-        x, y, Y = self.non_shaped_spectrum_xyY_calculation(spectrum)
-        self._calculate_cct(x, y)
+        # self.reshaped_spectrum = self.normalize(self.reshaped_spectrum)
+        x, y, Y = self.non_shaped_spectrum_xyY_calculation(self.spectrum)
+        # u, v = self.calculate_uv(x, y)
+        self.cc_t = self._calculate_cct(x, y)
         self._calculate_fl(spectrum)
         self._calculate_cri()
-        return self.cc_t, self.f_l, self.colors
+
+        return x, y, self.cc_t, self.f_l, self.colors
 
     def get_cri(self):
-        return self.result['cri']
+        return self.colors['cri']
 
     def get_colors(self):
-        return self.result
+        return self.colors
 
     def get_flicker_index(self):
         return self.f_l
@@ -316,7 +321,8 @@ class LedParameters():
         plt.show()
         return ax
 
-    def wavelength_to_rgb(self, w: float):
+    @staticmethod
+    def wavelength_to_rgb(w: float):
         round(w)
         red = 0.0
         green = 0.0
@@ -354,41 +360,38 @@ class LedParameters():
         if 701 <= w < 781:
             factor = 0.3 + 0.7 * (780 - w) / (780 - 700)
 
-        R = (red * factor)
-        G = (green * factor)
-        B = (blue * factor)
+        R = red * factor
+        G = green * factor
+        B = blue * factor
         return R, G, B
 
     def plot_spectrum(self):
         ax = plt.subplot()
         samples = np.mean(self.spectrum.intensity, axis=0)
-        # rgb_indx = 0
-        # d = 0.5
-        # target = 0
-        # start_color = list((255, 0, 247))
         for i in range(len(self.spectrum.wavelength)):
-            # if start_color[rgb_indx] == target:
-            #     rgb_indx = (rgb_indx + 1) % 3
-            #     if start_color[rgb_indx] == 0:
-            #         d = -2
-            #         target = 255
-            #     else:
-            #         d = 0.5
-            #         target = 0
-            if self.spectrum.wavelength[i]>780:
+            if self.spectrum.wavelength[i] > 780:
                 break
             start_color = self.wavelength_to_rgb(self.spectrum.wavelength[i])
             ax.bar(self.spectrum.wavelength[i], samples[i],
                    color=(start_color[0], start_color[1], start_color[2]))
-            # start_color[rgb_indx] = start_color[rgb_indx] - d
-            # if start_color[rgb_indx] < 0:
-            #     start_color[rgb_indx] = 0
-            # if start_color[rgb_indx] > 255:
-            #     start_color[rgb_indx] = 255
         plt.show()
         return ax
 
-    def show(self):
-        self.plot_spectrum()
-        self.plot_cri()
+    def plot_bb(self):
+        ax = plt.subplot()
+        for i, v in self.bb.items():
+            if i > 780:
+                break
+            start_color = self.wavelength_to_rgb(i)
+            ax.bar(i, v,
+                   color=(start_color[0], start_color[1], start_color[2]))
         plt.show()
+        return ax
+
+    def show(self, sp=True, cri=True, bb=False):
+        if bb:
+            self.plot_bb()
+        if sp:
+            self.plot_spectrum()
+        if cri:
+            self.plot_cri()
