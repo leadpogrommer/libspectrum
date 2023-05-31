@@ -122,9 +122,12 @@ class LedParameters:
         return x, y, Y
 
     @staticmethod
-    def _calculate_cct(x: float, y: float) -> float:
+    def _calculate_cct(x: float, y: float,alter_formula=False) -> float:
         P = (x - 0.332) / (y - 0.1858)
-        CCT = 5520.33 - 6823.3 * P + 3525 * P * P - 449 * P * P * P
+        if  not alter_formula:
+            CCT = 5520.33 - 6823.3 * P + 3525 * P * P - 449 * P * P * P
+        else:
+            CCT = -949.8 + 6253.8*exp(-P/0.92)+28.7*exp(-P/0.2)+0.00004*exp(-P/0.07)
         return CCT
 
     def _calculate_fl(self, spectrum: Spectrum) -> float:
@@ -209,7 +212,6 @@ class LedParameters:
 
         def c(u: float, v: float) -> float:
             return (4 - u - 10 * v) / v
-
         xyY_source = self._calculate_xyY(source_sd)
         uv_source = self.calculate_uv(xyY_source[0], xyY_source[1])
 
