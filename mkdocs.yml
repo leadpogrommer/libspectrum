@@ -31,5 +31,6 @@ nav:
   - 'installation.md'
   - 'reference.md'
   - 'Примеры':
-      - 'Запись спектра': 'examples/record_spectrum.ipynb'
+      - 'Запись спектра': 'examples/led_parameters.ipynb'
       - 'Пирометр': 'examples/pyrometer.ipynb'
+      - 'Характеристики ламп': 'examples/led_parameters.ipynb'
