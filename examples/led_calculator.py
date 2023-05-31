@@ -14,10 +14,9 @@ full_angle = 360 * 360 / 3.14
 
 class LedParameters:
 
-    def __init__(self, mw=400, mxw=781):
-        # self.intensity_scale=
+    def __init__(self, mw=400, mxw=781 , k = 1):
+        self.k_val= k
         self.spectrum = None
-        # self.intensity_scale = 80000 * (2 ** 16)
         self.reshaped_spectrum = None
         self.cc_t = None
         self.f_l = None
@@ -122,7 +121,7 @@ class LedParameters:
         return x, y, Y
 
     @staticmethod
-    def _calculate_cct(x: float, y: float,alter_formula=False) -> float:
+    def _calculate_cct(x: float, y: float,alter_formula=True) -> float:
         P = (x - 0.332) / (y - 0.1858)
         if  not alter_formula:
             CCT = 5520.33 - 6823.3 * P + 3525 * P * P - 449 * P * P * P
@@ -176,11 +175,8 @@ class LedParameters:
             b = c1 / b
             b /= (j ** 5)
             b *= 1e-9
-            # b *= 100
-            # b *= self.intensity_scale
             blackbody.update({i: b})
         self.bb = blackbody
-        # self.bb=self.normalize(self.bb)
         return self.bb
 
     def reference(self, source_sd: dict[int, float], ref_sd: dict[int, float]):
@@ -193,7 +189,7 @@ class LedParameters:
             k = 0.0
             for j in range(self.minWL, self.maxWL, 5):
                 k += sd[j] * CIE_XYZ_Func[j][1] * 5
-            k = 100 / k
+            k = self.k_val / k
             for j in range(self.minWL, self.maxWL, 5):
                 X += sd[j] * color[j] * CIE_XYZ_Func[j][0] * 5
                 Y += sd[j] * color[j] * CIE_XYZ_Func[j][1] * 5
@@ -224,17 +220,12 @@ class LedParameters:
         c_ref = c(uv_ref[0], uv_ref[1])
         d_ref = d(uv_ref[0], uv_ref[1])
         self.cri_true = pow((uv_source[0] - uv_ref[0]) ** 2 + (uv_source[1] - uv_ref[1]) ** 2, 0.5) < 0.0054
-        # source_sd=self.normalize(source_sd.copy())
-        # ref_sd=self.normalize(ref_sd.copy())
         for key, i in color_standards.items():
             xyY_source_clr = xy_for_colors(source_sd, i)
             xyY_ref_clr = xy_for_colors(ref_sd, i)
 
             uv_source_clr = self.calculate_uv(xyY_source_clr[0], xyY_source_clr[1])
             uv_ref_clr = self.calculate_uv(xyY_ref_clr[0], xyY_ref_clr[1])
-
-            # c_ref_clr = c(uv_ref_clr[0], uv_ref_clr[1])
-            # d_ref_clr = d(uv_ref_clr[0], uv_ref_clr[1])
 
             c_source_clr = c(uv_source_clr[0], uv_source_clr[1])
             d_source_clr = d(uv_source_clr[0], uv_source_clr[1])
@@ -288,14 +279,12 @@ class LedParameters:
     def run(self, spectrum: Spectrum):
         self.spectrum = spectrum
         self.reshaped_spectrum = self.reshape_spectrum(spectrum)
-        # self.reshaped_spectrum = self.normalize(self.reshaped_spectrum)
         x, y, Y = self.non_shaped_spectrum_xyY_calculation(self.spectrum)
-        # u, v = self.calculate_uv(x, y)
         self.cc_t = self._calculate_cct(x, y)
         self._calculate_fl(spectrum)
         self._calculate_cri()
 
-        return x, y, self.cc_t, self.f_l, self.colors
+        return self.cc_t, self.f_l, self.colors
 
     def get_cri(self):
         return self.colors['cri']
