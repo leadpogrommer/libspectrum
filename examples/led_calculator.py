@@ -14,7 +14,7 @@ full_angle = 360 * 360 / 3.14
 
 class LedParameters:
 
-    def __init__(self, mw=400, mxw=781 , k = 1):
+    def __init__(self, mw=400, mxw=781 , k = 100 , cct_alter =False):
         self.k_val= k
         self.spectrum = None
         self.reshaped_spectrum = None
@@ -23,6 +23,10 @@ class LedParameters:
         self.colors = {}
         self.flicker_graph = None
         self.bb = None
+        self.colorGraphs={}
+        self.alter_cri={}
+        self.cct_alt=cct_alter
+        self._clrgraphCnt=0
         self.minWL = mw
         self.maxWL = mxw
 
@@ -120,10 +124,9 @@ class LedParameters:
         y = Y / (X + Y + Z)
         return x, y, Y
 
-    @staticmethod
-    def _calculate_cct(x: float, y: float,alter_formula=True) -> float:
+    def _calculate_cct(self,x: float, y: float) -> float:
         P = (x - 0.332) / (y - 0.1858)
-        if  not alter_formula:
+        if  not self.cct_alt:
             CCT = 5520.33 - 6823.3 * P + 3525 * P * P - 449 * P * P * P
         else:
             CCT = -949.8 + 6253.8*exp(-P/0.92)+28.7*exp(-P/0.2)+0.00004*exp(-P/0.07)
@@ -187,20 +190,24 @@ class LedParameters:
             Y = 0.0
             Z = 0.0
             k = 0.0
+            cg={}
             for j in range(self.minWL, self.maxWL, 5):
                 k += sd[j] * CIE_XYZ_Func[j][1] * 5
             k = self.k_val / k
             for j in range(self.minWL, self.maxWL, 5):
+                cg.update({j:sd[j] * color[j]*k})
                 X += sd[j] * color[j] * CIE_XYZ_Func[j][0] * 5
                 Y += sd[j] * color[j] * CIE_XYZ_Func[j][1] * 5
                 Z += sd[j] * color[j] * CIE_XYZ_Func[j][2] * 5
-
+            self.colorGraphs.update({self._clrgraphCnt:cg})
+            self._clrgraphCnt+=1
             X *= k
             Y *= k
             Z *= k
             x = X / (X + Y + Z)
             y = Y / (X + Y + Z)
             Y = Y
+
             return x, y, Y
 
         def d(u: float, v: float) -> float:
@@ -253,7 +260,7 @@ class LedParameters:
         return result
 
     def _calculate_cri(self) -> float:
-
+        self._clrgraphCnt=0
         reshaped = self.reshaped_spectrum.copy()
 
         x, y, Y = self._calculate_xyY(self.reshaped_spectrum)
@@ -268,6 +275,19 @@ class LedParameters:
             ln += 1
         res /= ln
         self.colors.update({'cri': res})
+
+#        for i in range(0,28,2):
+#            diffx=0.0
+#            diffy=0.0
+#            diffz=0.0
+#            for j in range(self.minWL, self.maxWL,5):
+#                diffz += 1.0-abs(self.colorGraphs[i][j] - self.colorGraphs[i+1][j])*CIE_XYZ_Func[j][2]
+#                diffy += 1.0-abs(self.colorGraphs[i][j] - self.colorGraphs[i+1][j])*CIE_XYZ_Func[j][1]
+#                diffx += 1.0-abs(self.colorGraphs[i][j] - self.colorGraphs[i+1][j])*CIE_XYZ_Func[j][0]
+#            diff=diffx+diffy+diffz
+#            inp=100*diff/(self.maxWL-self.minWL)
+#            self.alter_cri.update({int(i/2+1):inp})
+
         return res
 
     @staticmethod
@@ -370,15 +390,22 @@ class LedParameters:
 
     def plot_bb(self):
         ax = plt.subplot()
-        for i, v in self.bb.items():
-            if i > 780:
-                break
-            start_color = self.wavelength_to_rgb(i)
-            ax.bar(i, v,
-                   color=(start_color[0], start_color[1], start_color[2]))
+        bb=self.normalize(self.bb.copy())
+        rs=self.normalize(self.reshaped_spectrum.copy())
+        ax.plot(bb.keys(),bb.values(),color='black')
+        ax.plot(rs.keys(),rs.values(),color='red')
         plt.show()
         return ax
 
+    def plot_clrGraphs(self):
+        for i in range(0,28,2):
+            ax=plt.subplot(4,4,int(i/2+1))
+            ax.set_title(round(self.colors[str(int(i/2 + 1))]))
+            ax.plot(self.colorGraphs[i].keys(),self.colorGraphs[i].values(),color='red')
+            ax.plot(self.colorGraphs[i+1].keys(),self.colorGraphs[i+1].values(),color='black')
+
+    #def get_alter_cri(self):
+        #return self.alter_cri
     def show(self, sp=True, cri=True, bb=False):
         if bb:
             self.plot_bb()
