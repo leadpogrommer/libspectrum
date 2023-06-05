@@ -32,7 +32,7 @@ class Colorimeter:
         ind = [illuminant_data['wavelength'][0] <= x <= illuminant_data['wavelength'][-1] for x in spectrum.wavelength]
         wl = spectrum.wavelength[ind]
         dwl = np.diff(spectrum.wavelength, append=0)[ind]
-        intensity = (spectrum.intensity[-1] / self.reference_spectrum.intensity[-1])[ind]
+        intensity = (spectrum.intensity[-1] / self.reference_spectrum.intensity[-1].clip(0.1))[ind]
 
         sens_x = np.interp(wl, observer_data['wavelength'], observer_data['X'])
         sens_y = np.interp(wl, observer_data['wavelength'], observer_data['Y'])
@@ -40,7 +40,7 @@ class Colorimeter:
 
         illuminant_intensity = np.interp(wl, illuminant_data['wavelength'], illuminant_data['intensity'])
 
-        k = 1 / np.sum(sens_y * illuminant_intensity * dwl)
+        k = 1 / max(np.sum(sens_y * illuminant_intensity * dwl), 0.1)
         X = k * np.sum(sens_x * intensity * illuminant_intensity * dwl)
         Y = k * np.sum(sens_y * intensity * illuminant_intensity * dwl)
         Z = k * np.sum(sens_z * intensity * illuminant_intensity * dwl)
